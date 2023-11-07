@@ -13,8 +13,6 @@ ADD  REBATE_START_DATE TIMESTAMPTZ,
 	REBATE_TYPE varchar(102),
 	REBATE_CALC_TYPE varchar(103);
 
-
-
  
 ---transaction build
 SELECT 399,'Vendor Rebate', da.TRAN_DATE , 'order',da.order_id,
