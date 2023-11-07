@@ -19,22 +19,57 @@ ADD  REBATE_START_DATE TIMESTAMPTZ,
 
 INSERT INTO ods.TRANSACTION_SUB_TYPE  (TRAN_SUB_TYPE_ID,TRAN_TYPE)
 
-VALUES (111,300,'Vendor Rebates')
+VALUES (111,300,'Vendor Rebates'),
+(112,300,'Brand Marketing Fees'),
+(113,300,'TPR Vendor Funding'),
+(114,300,'A&S Vendor Funding'),
+(115,300,'Thrive Cash Vendor Funding'),
+(116,300,'Cold Care'),
+(117,300,'Summer Care'),
+(118,300,'Coupon Vendor Funding')
 
-SELECT * FROM ods.TRANSACTION_SUB_TYPE 
+SELECT * FROM ods.GL_MAP_HEADER  
 
 
 INSERT INTO ods.GL_MAP_HEADER (MAP_ID,TRAN_TYPE,TRAN_SUB_TYPE_ID,PRIORITY,MAP_DESCRIPTION)
 
-
-VALUES (167, 350, 109,9999,'Product Refund Adjustment'),
-(168, 350, 110,9999,'Gift Card Refund Adjustment')
+(174,300,111,9999,'Vendor Funding Invoice - Rebates '),
+(175,300,112,9999,'Vendor Funding Invoice - Brand Marketing Fees'),
+(176,300,113,9999,'Vendor Funding Invoice - TPR'),
+(177,300,114,9999,'Vendor Funding Invoice - A&S'),
+(178,300,115,9999,'Vendor Funding Invoice - Thrive Cash'),
+(179,300,116,9999,'Vendor Funding Invoice - Cold Care'),
+(180,300,117,9999,'Vendor Funding Invoice - Summer Care'),
+(181,300,118,9999,'Vendor Funding Invoice - Coupons'),
+(182,300,111,9999,'Vendor Funding Credit - Rebates '),
+(183,300,112,9999,'Vendor Funding Credit - Brand Marketing Fees'),
+(184,300,113,9999,'Vendor Funding Credit - TPR'),
+(185,300,114,9999,'Vendor Funding Credit - A&S'),
+(186,300,115,9999,'Vendor Funding Credit - Thrive Cash'),
+(187,300,116,9999,'Vendor Funding Credit - Cold Care'),
+(188,300,117,9999,'Vendor Funding Credit - Summer Care'),
+(189,300,118,9999,'Vendor Funding Credit - Coupons')
 
 INSERT INTO ods.GL_MAP_DETAIL (GMD_ID,MAP_ID,LINE_NUM,TRAN_COLUMN_NAME,DEBIT_ACCOUNT_ID,CREDIT_ACCOUNT_ID)
 
+SELECT * FROM ods.GL_MAP_DETAIL 
 
-VALUES (354,167,1,'tran_amt',594,277),
-(355,168,1,'tran_amt',594,886)
+VALUES (359,174,1,'tran_amt',670,284),
+(360,175,1,'tran_amt',670,570),
+(361,176,1,'tran_amt',670,802),
+(362,177,1,'tran_amt',670,885),
+(363,178,1,'tran_amt',670,801),
+(364,179,1,'tran_amt',670,648),
+(365,180,1,'tran_amt',670,648),
+(366,181,1,'tran_amt',670,277),
+(367,182,1,'tran_amt',112,802),
+(368,183,1,'tran_amt',112,570),
+(369,184,1,'tran_amt',112,802),
+(370,185,1,'tran_amt',112,885),
+(371,186,1,'tran_amt',112,801),
+(372,187,1,'tran_amt',112,648),
+(373,188,1,'tran_amt',112,648),
+(374,189,1,'tran_amt',112,802)
 
 insert INTO ods.GL_MAP_RULES (GMR_ID,MAP_ID,RULE_NUM)
 
@@ -42,8 +77,9 @@ insert INTO ods.GL_MAP_RULES (GMR_ID,MAP_ID,RULE_NUM)
 VALUES (206,167,1),(207,168,1)
 
 
-SELECT * FROM TRANSACTION_SUB_TYPE 
+SELECT * FROM ods.GL_MAP_RULES 
 
+SELECT * FROM ods.NETSUITE_ACCOUNTS  WHERE ACCOUNTNUMBER IN ('51035','20100','12010','50201','43105','43114','43113','51041')
 
 ---Built on Transactions
 
