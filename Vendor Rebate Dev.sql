@@ -18,7 +18,7 @@ ADD  REBATE_START_DATE TIMESTAMPTZ,
 
 --update tables for gl mapping
 
-INSERT INTO ods.TRANSACTION_SUB_TYPE  (TRAN_SUB_TYPE_ID,TRAN_TYPE)
+INSERT INTO ods.TRANSACTION_SUB_TYPE  (TRAN_SUB_TYPE_ID,TRAN_TYPE,sub_type)
 
 VALUES (111,300,'Vendor Rebates'),
 (112,300,'Brand Marketing Fees'),
@@ -29,7 +29,7 @@ VALUES (111,300,'Vendor Rebates'),
 (117,300,'Summer Care'),
 (118,300,'Coupon Vendor Funding')
 
-SELECT * FROM ods.GL_MAP_HEADER  
+SELECT * FROM ods.TRANSACTION_SUB_TYPE  
 
 
 INSERT INTO ods.GL_MAP_HEADER (MAP_ID,TRAN_TYPE,TRAN_SUB_TYPE_ID,PRIORITY,MAP_DESCRIPTION)
@@ -91,13 +91,12 @@ VALUES (213,175,1),
 (226,188,1),
 (227,189,1)
 
-SELECT * FROM ods.GL_MAP_RULES 
-
-SELECT * FROM ods.NETSUITE_ACCOUNTS  WHERE ACCOUNTNUMBER IN ('51035','20100','12010','50201','43105','43114','43113','51041')
-
----Built on Transactions
-
-SELECT 399,'Vendor Rebate', tr.TRAN_DATE , 'order',tr.order_id,
+---Built on Transactions Table
+insert into ods.transactions (tran_type, tran_sub_type_id, tran_sub_type, tran_date, order_type, order_id, increment_id, customer_id, company_id, tran_amt, 
+  created_at, updated_at, sale_date, tran_gl_date)   
+  
+  
+SELECT 300,111, 'Vendor Rebate', tr.TRAN_GL_DATE , 'order',tr.order_id,
 tr.LOCATION_ID ,tr.SKU,ci.GROUP_ID ,ci.GROUP_NAME ,ci.ITEM_CATEGORY_ID ,ci.ITEM_CATEGORY_NAME ,
 ci.SUBCATEGORY_ID ,ci.SUBCATEGORY_NAME ,ci.CLASS_ID ,ci.CLASS_NAME 
 ,tr.ITEM_ID ,tr.TRAN_QTY ,tr.sku,tr.SALE_DATE ,
