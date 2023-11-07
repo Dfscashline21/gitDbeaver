@@ -15,7 +15,7 @@ ADD  REBATE_START_DATE TIMESTAMPTZ,
 
 
 
-
+ 
 ---transaction build
 SELECT 399,'Vendor Rebate', da.TRAN_DATE , 'order',da.order_id,
 da.LOCATION_ID ,da.SKU,ci.GROUP_ID ,ci.GROUP_NAME ,ci.ITEM_CATEGORY_ID ,ci.ITEM_CATEGORY_NAME ,
