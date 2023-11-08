@@ -1,5 +1,10 @@
 USE WAREHOUSE SNOWBALL_ODS
 
+
+SELECT * FROM ods."TRANSACTIONS" tr 
+LIMIT 10 
+
+
 --- Adjust transaction data for additional fields 
 ALTER TABLE TM_IGLOO_ODS_STG.ods."TRANSACTIONS" 
 ADD  REBATE_START_DATE TIMESTAMPTZ,
@@ -8,16 +13,16 @@ ADD  REBATE_START_DATE TIMESTAMPTZ,
 	REBATE_DOLLAR_AMOUNT float,
 	REBATE_BILLING_PERIOD varchar(100),
 	REBATE_TYPE varchar(102),
-	REBATE_CALC_TYPE varchar(103)
+	REBATE_CALC_TYPE varchar(103),
 	REBATE_BILLING_METHOD varchar(104);
 
 
 
 --update tables for gl mapping
 
-INSERT INTO ods.TRANSACTION_SUB_TYPE  (TRAN_SUB_TYPE_ID,TRAN_TYPE,sub_type)
+SELECT * FROM ods.TRANSACTION_SUB_TYPE
 
-
+INSERT INTO ods.TRANSACTION_SUB_TYPE  (TRAN_SUB_TYPE_ID,TRAN_TYPE,TRAN_SUB_TYPE)
 VALUES (111,300,'Vendor Rebates'),
 (112,300,'Brand Marketing Fees'),
 (113,300,'TPR Vendor Funding'),
@@ -28,9 +33,7 @@ VALUES (111,300,'Vendor Rebates'),
 (118,300,'Coupon Vendor Funding')
 
 INSERT INTO ods.GL_MAP_HEADER (MAP_ID,TRAN_TYPE,TRAN_SUB_TYPE_ID,PRIORITY,MAP_DESCRIPTION)
-
-
-(174,300,111,9999,'Vendor Funding Invoice - Rebates '),
+VALUES (174,300,111,9999,'Vendor Funding Invoice - Rebates '),
 (175,300,112,9999,'Vendor Funding Invoice - Brand Marketing Fees'),
 (176,300,113,9999,'Vendor Funding Invoice - TPR'),
 (177,300,114,9999,'Vendor Funding Invoice - A&S'),
@@ -48,8 +51,6 @@ INSERT INTO ods.GL_MAP_HEADER (MAP_ID,TRAN_TYPE,TRAN_SUB_TYPE_ID,PRIORITY,MAP_DE
 (189,300,118,9999,'Vendor Funding Credit - Coupons')
 
 INSERT INTO ods.GL_MAP_DETAIL (GMD_ID,MAP_ID,LINE_NUM,TRAN_COLUMN_NAME,DEBIT_ACCOUNT_ID,CREDIT_ACCOUNT_ID)
-
-
 VALUES (359,174,1,'tran_amt',670,284),
 (360,175,1,'tran_amt',670,570),
 (361,176,1,'tran_amt',670,802),
@@ -67,9 +68,9 @@ VALUES (359,174,1,'tran_amt',670,284),
 (373,188,1,'tran_amt',112,648),
 (374,189,1,'tran_amt',112,802)
 
-insert INTO ods.GL_MAP_RULES (GMR_ID,MAP_ID,RULE_NUM,COLUMN_NAME,"CONDITION",VALUE)
+SELECT *FROM TM_IGLOO_ODS_STG.ods.GL_MAP_RULEs
 
-
+insert INTO ods.GL_MAP_RULES (GMR_ID,MAP_ID,RULE_NUM)
 VALUES (213,175,1),
 (214,176,1),
 (215,177,1),
@@ -88,9 +89,7 @@ VALUES (213,175,1),
 
 ---Built on Transactions Table
 insert into ods.transactions (TRAN_TYPE,TRAN_SUB_TYPE,TRAN_DATE,ORDER_TYPE,ORDER_ID,ORDER_LINE_ID,COMPANY_ID,LOCATION_ID,CUSTOMER_ID,SKU,GROUP_ID,GROUP_NAME,CATEGORY_ID,CATEGORY_NAME,SUB_CATEGORY_ID,SUB_CATEGORY_NAME,CLASS_ID,CLASS_NAME,SUBCLASS_ID,SUBCLASS_NAME,TRAN_QTY,CREATED_AT,INCREMENT_ID,MAGENTO_LOCATION_ID,TRAN_COST_AMT,SALE_DATE,ITEM_ID,TRAN_SUB_TYPE_ID,TRAN_GL_DATE,SHIP_DATE,TRAN_COGS_AMT,REBATE_START_DATE,REBATE_END_DATE,REBATE_PERCENTAGE,REBATE_DOLLAR_AMOUNT,REBATE_BILLING_PERIOD,REBATE_TYPE,REBATE_CALC_TYPE,TRAN_AMT,REBATE_BILLING_METHOD
-) 
-
-
+)
 SELECT 300,'Vendor Rebates',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.SUBCLASS_ID,tr.SUBCLASS_NAME,tr.TRAN_QTY,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.TRAN_COST_AMT,tr.SALE_DATE,tr.ITEM_ID,111,tr.TRAN_GL_DATE,tr.SHIP_DATE,tr.TRAN_COGS_AMT,
 COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AS start_date,
 COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) AS end_date,
@@ -126,52 +125,60 @@ LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILL
 WHERE tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tr.TRAN_SUB_TYPE_ID =16 AND tr.TRAN_TYPE =300
 AND fc.FC_TYPE !='drinks' AND COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) IS NOT NULL
  
+SELECT * FROM ods."TRANSACTIONS" tr
+WHERE tr.TRAN_SUB_TYPE_ID =111
+
+--insert into ods.transactions (tran_type, tran_sub_type_id, tran_sub_type, tran_date, order_type, order_id, increment_id, order_line_id, customer_id, company_id, location_id, magento_location_id,
+--        sku, parent_item_id, group_id ,group_name, category_id, category_name, sub_category_id, sub_category_name, class_id , class_name ,
+--        subclass_id, subclass_name,tran_qty, tran_amt, created_at, sale_date, item_id, tran_cost_amt, tran_gl_date, ship_date) 
+--
+--        
+--        select 300 as tran_type, 111, 'Vendor Rebates'  as tran_sub_type, sof.tran_date, 'order' as order_type, sof.order_id, sof.increment_id,
+--sof.item_id as order_line_id, sof.customer_id,1, sof.fc, sof.magento_fc, sof.sku, sof.parent_item_id, ci.group_id, ci.group_name,
+--ci.item_category_id, ci.item_category_name, ci.subcategory_id, ci.subcategory_name, ci.class_id, ci.class_name, ci.subclass_id, ci.subclass_name,
+--sof.units_shipped 	, CASE	
+--	WHEN CASE 
+--	WHEN sof.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (sof.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+--	THEN 'Y'
+--	ELSE 'N'
+--END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * (sof.qty_ordered * ci.net_unit_cost)
+--	WHEN CASE 
+--	WHEN sof.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (sof.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+--	THEN 'Y'
+--	ELSE 'N'
+--END ='Y' AND COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) IS NOT NULL THEN COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) * (sof.units_shipped )
+--END AS tran_amt,
+--current_timestamp, sof.sale_date, ci.item_id, sof.qty_ordered * ci.net_unit_cost,
+--convert_timezone('UTC', 'America/Los_Angeles', sof.tran_date )::date, 
+--convert_timezone('UTC', 'America/Los_Angeles', sof.fulfilled_at)::date,
+--COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AS start_date,
+--COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) AS end_date,
+--COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) AS percentage,
+--COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) AS dollar_amount,
+--COALESCE(vr.billing_period,vrin.billing_period,br.billing_period,brin.billing_period) AS billing_period,
+--COALESCE(vr.brand_sku,vrin.brand_sku,br.brand_sku,brin.brand_sku) AS brand_sku,
+--CASE 
+--	WHEN COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) IS NOT NULL THEN 'Dollar Amount (unit)' 
+--	WHEN COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN 'Percentage of COGS' 
+--END AS rebate_calc_type
+--,COALESCE(vr.billing_method_id,vrin.billing_method_id,br.billing_method_id,brin.billing_method_id) AS billing_method
+--from staging.stage_order_fulfillment sof
+--left outer join ods.ns_fc_xref nfx on sof.fc = nfx.ns_fc_id
+--left outer join ods.curr_items ci on sof.sku = ci.item_name and coalesce(nfx.ods_fc_id,2)  = ci.fc_id
+--LEFT JOIN (SELECT DISTINCT * FROM TM_IGLOO_ODS_STG.ods.NS_VENDOR_REBATES WHERE start_date < sysdate() AND end_date> sysdate() AND active_status_id = 1 )vr ON vr.ITEM_ID =sof.ITEM_ID
+--LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILLING_PERIOD,BRAND_ID,BRAND_RECORDS_NAME,START_DATE,END_DATE,DOLLAR_AMOUNT,PERCENTAGE,ITEM_ID,IS_INACTIVE,TYPE_ID,REBATE_TYPE,BILLING_METHOD_ID,BILLING_CUSTOMER_ID,VENDOR_ID,BRAND_SKU,DATE_PROCESSED,REBATE_DATE FROM ods.NS_VENDOR_REBATES WHERE start_date < sysdate() AND end_date> sysdate() AND active_status_id = 2 )vrin ON vrin.ITEM_ID =sof.ITEM_ID
+--LEFT JOIN (SELECT DISTINCT * FROM ods.ns_vendor_rebates vr WHERE vr.ITEM_ID IS NULL AND active_status_id =1 AND start_date < sysdate() AND end_date> sysdate()) br ON  br.brand_id=ci.brand_id
+--LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILLING_PERIOD,BRAND_ID,BRAND_RECORDS_NAME,START_DATE,END_DATE,DOLLAR_AMOUNT,PERCENTAGE,ITEM_ID,IS_INACTIVE,TYPE_ID,REBATE_TYPE,BILLING_METHOD_ID,BILLING_CUSTOMER_ID,VENDOR_ID,BRAND_SKU,DATE_PROCESSED,REBATE_DATE FROM ods.NS_VENDOR_REBATES  WHERE ITEM_ID IS NULL AND active_status_id =2 AND start_date <sysdate() AND end_date> sysdate()) brin ON  brin.brand_id=ci.brand_id
+--where sof.units_shipped  > 0 and sof.product_type <> 'bundle'
 
 
-insert into ods.transactions (tran_type, tran_sub_type_id, tran_sub_type, tran_date, order_type, order_id, increment_id, order_line_id, customer_id, company_id, location_id, magento_location_id,
-        sku, parent_item_id, group_id ,group_name, category_id, category_name, sub_category_id, sub_category_name, class_id , class_name ,
-        subclass_id, subclass_name,tran_qty, tran_amt, created_at, sale_date, item_id, tran_cost_amt, tran_gl_date, ship_date) 
+SELECT ci.brand_name,tr.REBATE_billing_method,'UPDATE',tr.sku,ci.description, tr.REBATE_TYPE,tr.REBATE_BILLING_PERIOD,tr.REBATE_START_DATE, tr.REBATE_END_DATE, tr.TRAN_QTY ,tr.TRAN_AMT ,tr.TRAN_COGS_AMT ,tr.REBATE_PERCENTAGE,tr.REBATE_DOLLAR_AMOUNT,tr.TRAN_AMT  
+FROM ods."TRANSACTIONS" tr
+LEFT JOIN ods.CURR_ITEMS_PROD ci ON ci.item_name = tr.SKU  AND ci.fc_id = tr.MAGENTO_LOCATION_ID 
+WHERE tr.TRAN_SUB_TYPE_ID in (111,16) AND tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date}
 
-        
-        select 300 as tran_type, 111, 'Vendor Rebates'  as tran_sub_type, sof.tran_date, 'order' as order_type, sof.order_id, sof.increment_id,
-sof.item_id as order_line_id, sof.customer_id,1, sof.fc, sof.magento_fc, sof.sku, sof.parent_item_id, ci.group_id, ci.group_name,
-ci.item_category_id, ci.item_category_name, ci.subcategory_id, ci.subcategory_name, ci.class_id, ci.class_name, ci.subclass_id, ci.subclass_name,
-sof.units_shipped 	, CASE	
-	WHEN CASE 
-	WHEN sof.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (sof.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
-	THEN 'Y'
-	ELSE 'N'
-END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * (sof.qty_ordered * ci.net_unit_cost)
-	WHEN CASE 
-	WHEN sof.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (sof.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
-	THEN 'Y'
-	ELSE 'N'
-END ='Y' AND COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) IS NOT NULL THEN COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) * (sof.units_shipped )
-END AS tran_amt,
-current_timestamp, sof.sale_date, ci.item_id, sof.qty_ordered * ci.net_unit_cost,
-convert_timezone('UTC', 'America/Los_Angeles', sof.tran_date )::date, 
-convert_timezone('UTC', 'America/Los_Angeles', sof.fulfilled_at)::date,
-COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AS start_date,
-COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) AS end_date,
-COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) AS percentage,
-COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) AS dollar_amount,
-COALESCE(vr.billing_period,vrin.billing_period,br.billing_period,brin.billing_period) AS billing_period,
-COALESCE(vr.brand_sku,vrin.brand_sku,br.brand_sku,brin.brand_sku) AS brand_sku,
-CASE 
-	WHEN COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) IS NOT NULL THEN 'Dollar Amount (unit)' 
-	WHEN COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN 'Percentage of COGS' 
-END AS rebate_calc_type
-,COALESCE(vr.billing_method_id,vrin.billing_method_id,br.billing_method_id,brin.billing_method_id) AS billing_method
-from staging.stage_order_fulfillment sof
-left outer join ods.ns_fc_xref nfx on sof.fc = nfx.ns_fc_id
-left outer join ods.curr_items ci on sof.sku = ci.item_name and coalesce(nfx.ods_fc_id,2)  = ci.fc_id
-LEFT JOIN (SELECT DISTINCT * FROM TM_IGLOO_ODS_STG.ods.NS_VENDOR_REBATES WHERE start_date < sysdate() AND end_date> sysdate() AND active_status_id = 1 )vr ON vr.ITEM_ID =sof.ITEM_ID
-LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILLING_PERIOD,BRAND_ID,BRAND_RECORDS_NAME,START_DATE,END_DATE,DOLLAR_AMOUNT,PERCENTAGE,ITEM_ID,IS_INACTIVE,TYPE_ID,REBATE_TYPE,BILLING_METHOD_ID,BILLING_CUSTOMER_ID,VENDOR_ID,BRAND_SKU,DATE_PROCESSED,REBATE_DATE FROM ods.NS_VENDOR_REBATES WHERE start_date < sysdate() AND end_date> sysdate() AND active_status_id = 2 )vrin ON vrin.ITEM_ID =sof.ITEM_ID
-LEFT JOIN (SELECT DISTINCT * FROM ods.ns_vendor_rebates vr WHERE vr.ITEM_ID IS NULL AND active_status_id =1 AND start_date < sysdate() AND end_date> sysdate()) br ON  br.brand_id=ci.brand_id
-LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILLING_PERIOD,BRAND_ID,BRAND_RECORDS_NAME,START_DATE,END_DATE,DOLLAR_AMOUNT,PERCENTAGE,ITEM_ID,IS_INACTIVE,TYPE_ID,REBATE_TYPE,BILLING_METHOD_ID,BILLING_CUSTOMER_ID,VENDOR_ID,BRAND_SKU,DATE_PROCESSED,REBATE_DATE FROM ods.NS_VENDOR_REBATES  WHERE ITEM_ID IS NULL AND active_status_id =2 AND start_date <sysdate() AND end_date> sysdate()) brin ON  brin.brand_id=ci.brand_id
-where sof.units_shipped  > 0 and sof.product_type <> 'bundle'
+SELECT * FROM ods."TRANSACTIONS" 
 
-
-
-
+SELECT * FROM  ods.CURR_ITEMS_PROD ci
+WHERE ci.item_name = '856920005713'
 
