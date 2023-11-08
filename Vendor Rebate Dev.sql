@@ -17,6 +17,7 @@ ADD  REBATE_START_DATE TIMESTAMPTZ,
 
 INSERT INTO ods.TRANSACTION_SUB_TYPE  (TRAN_SUB_TYPE_ID,TRAN_TYPE,sub_type)
 
+
 VALUES (111,300,'Vendor Rebates'),
 (112,300,'Brand Marketing Fees'),
 (113,300,'TPR Vendor Funding'),
@@ -26,10 +27,8 @@ VALUES (111,300,'Vendor Rebates'),
 (117,300,'Summer Care'),
 (118,300,'Coupon Vendor Funding')
 
-SELECT * FROM ods.TRANSACTION_SUB_TYPE  
-
-
 INSERT INTO ods.GL_MAP_HEADER (MAP_ID,TRAN_TYPE,TRAN_SUB_TYPE_ID,PRIORITY,MAP_DESCRIPTION)
+
 
 (174,300,111,9999,'Vendor Funding Invoice - Rebates '),
 (175,300,112,9999,'Vendor Funding Invoice - Brand Marketing Fees'),
@@ -50,7 +49,6 @@ INSERT INTO ods.GL_MAP_HEADER (MAP_ID,TRAN_TYPE,TRAN_SUB_TYPE_ID,PRIORITY,MAP_DE
 
 INSERT INTO ods.GL_MAP_DETAIL (GMD_ID,MAP_ID,LINE_NUM,TRAN_COLUMN_NAME,DEBIT_ACCOUNT_ID,CREDIT_ACCOUNT_ID)
 
-SELECT * FROM ods.GL_MAP_DETAIL 
 
 VALUES (359,174,1,'tran_amt',670,284),
 (360,175,1,'tran_amt',670,570),
@@ -86,13 +84,13 @@ VALUES (213,175,1),
 (224,186,1),
 (225,187,1),
 (226,188,1),
-(227,189,1)
+(227,189,1);
 
 ---Built on Transactions Table
 insert into ods.transactions (TRAN_TYPE,TRAN_SUB_TYPE,TRAN_DATE,ORDER_TYPE,ORDER_ID,ORDER_LINE_ID,COMPANY_ID,LOCATION_ID,CUSTOMER_ID,SKU,GROUP_ID,GROUP_NAME,CATEGORY_ID,CATEGORY_NAME,SUB_CATEGORY_ID,SUB_CATEGORY_NAME,CLASS_ID,CLASS_NAME,SUBCLASS_ID,SUBCLASS_NAME,TRAN_QTY,CREATED_AT,INCREMENT_ID,MAGENTO_LOCATION_ID,TRAN_COST_AMT,SALE_DATE,ITEM_ID,TRAN_SUB_TYPE_ID,TRAN_GL_DATE,SHIP_DATE,TRAN_COGS_AMT,REBATE_START_DATE,REBATE_END_DATE,REBATE_PERCENTAGE,REBATE_DOLLAR_AMOUNT,REBATE_BILLING_PERIOD,REBATE_TYPE,REBATE_CALC_TYPE,TRAN_AMT,REBATE_BILLING_METHOD
-)   
-  
-  
+) 
+
+
 SELECT 300,'Vendor Rebates',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.SUBCLASS_ID,tr.SUBCLASS_NAME,tr.TRAN_QTY,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.TRAN_COST_AMT,tr.SALE_DATE,tr.ITEM_ID,111,tr.TRAN_GL_DATE,tr.SHIP_DATE,tr.TRAN_COGS_AMT,
 COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AS start_date,
 COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) AS end_date,
@@ -129,14 +127,13 @@ AND fc.FC_TYPE !='drinks' AND COALESCE(vr.START_DATE,vrin.start_date,br.start_da
 LIMIT 5
 
 
---
---insert into ods.transactions (tran_type, tran_sub_type_id, tran_sub_type, tran_date, order_type, order_id, increment_id, order_line_id, customer_id, company_id, location_id, magento_location_id,
---        sku, parent_item_id, group_id ,group_name, category_id, category_name, sub_category_id, sub_category_name, class_id , class_name ,
---        subclass_id, subclass_name,tran_qty, tran_amt, created_at, sale_date, item_id, tran_cost_amt, tran_gl_date, ship_date)
---        
---        
+
+insert into ods.transactions (tran_type, tran_sub_type_id, tran_sub_type, tran_date, order_type, order_id, increment_id, order_line_id, customer_id, company_id, location_id, magento_location_id,
+        sku, parent_item_id, group_id ,group_name, category_id, category_name, sub_category_id, sub_category_name, class_id , class_name ,
+        subclass_id, subclass_name,tran_qty, tran_amt, created_at, sale_date, item_id, tran_cost_amt, tran_gl_date, ship_date) 
+
         
-select 300 as tran_type, 111, 'Vendor Rebates'  as tran_sub_type, sof.tran_date, 'order' as order_type, sof.order_id, sof.increment_id,
+        select 300 as tran_type, 111, 'Vendor Rebates'  as tran_sub_type, sof.tran_date, 'order' as order_type, sof.order_id, sof.increment_id,
 sof.item_id as order_line_id, sof.customer_id,1, sof.fc, sof.magento_fc, sof.sku, sof.parent_item_id, ci.group_id, ci.group_name,
 ci.item_category_id, ci.item_category_name, ci.subcategory_id, ci.subcategory_name, ci.class_id, ci.class_name, ci.subclass_id, ci.subclass_name,
 sof.units_shipped 	, CASE	
@@ -210,5 +207,3 @@ LEFT JOIN (SELECT DISTINCT * FROM ods.ns_vendor_rebates vr WHERE vr.ITEM_ID IS N
 LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILLING_PERIOD,BRAND_ID,BRAND_RECORDS_NAME,START_DATE,END_DATE,DOLLAR_AMOUNT,PERCENTAGE,ITEM_ID,IS_INACTIVE,TYPE_ID,REBATE_TYPE,BILLING_METHOD_ID,BILLING_CUSTOMER_ID,VENDOR_ID,BRAND_SKU,DATE_PROCESSED,REBATE_DATE FROM ods.NS_VENDOR_REBATES  WHERE ITEM_ID IS NULL AND active_status_id =2 AND start_date < $P{start_date} AND end_date> $P{end_date}) brin ON  brin.brand_id=ci.brand_id
 WHERE da.TRAN_DATE BETWEEN $P{start_date} AND $P{end_date} AND COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) IS NOT NULL
 
-
-SELECT * FROM ods."TRANSACTIONS" tr  WHERE tr.tran_sub_type_id = 16 LIMIT 10
