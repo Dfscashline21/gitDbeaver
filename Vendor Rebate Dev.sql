@@ -184,7 +184,8 @@ LEFT JOIN ods.BILLING_METHOD bm ON bm.LIST_ID =tt.rebate_billing_method
 WHERE tt.rebate_start_date IS NOT NULL
 
 
-   
+SELECT * FROM ODS."TRANSACTIONS" tr
+WHERE tr.TRAN_SUB_TYPE_id = 111 AND tr.CREATED_AT >'2023-11-08'
     
 UPDATE ods."TRANSACTIONS" 
 	SET 
