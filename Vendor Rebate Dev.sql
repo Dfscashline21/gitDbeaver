@@ -89,14 +89,13 @@ VALUES (213,175,1),
 (226,188,1),
 (227,189,1);
 
-SELECT * 
-FROM ods."TRANSACTIONS" tr
+DELETE FROM ods."TRANSACTIONS" tr 
 WHERE tr.TRAN_SUB_TYPE_ID =111 AND tr.FULFILLMENT_TRAN_ID IS NOT NULL AND tr.TRAN_GL_DATE <'2023-10-30'
 
 ---Built on Transactions Table
 insert into ods.transactions (TRAN_TYPE,TRAN_SUB_TYPE,TRAN_DATE,ORDER_TYPE,ORDER_ID,ORDER_LINE_ID,COMPANY_ID,LOCATION_ID,CUSTOMER_ID,SKU,GROUP_ID,GROUP_NAME,CATEGORY_ID,CATEGORY_NAME,SUB_CATEGORY_ID,SUB_CATEGORY_NAME,CLASS_ID,CLASS_NAME,SUBCLASS_ID,SUBCLASS_NAME,TRAN_QTY,CREATED_AT,INCREMENT_ID,MAGENTO_LOCATION_ID,TRAN_COST_AMT,SALE_DATE,ITEM_ID,TRAN_SUB_TYPE_ID,TRAN_GL_DATE,SHIP_DATE,TRAN_COGS_AMT,REBATE_START_DATE,REBATE_END_DATE,REBATE_PERCENTAGE,REBATE_DOLLAR_AMOUNT,REBATE_BILLING_PERIOD,REBATE_TYPE,REBATE_CALC_TYPE,TRAN_AMT,REBATE_BILLING_METHOD,FULFILLMENT_TRAN_ID
 )
-SELECT 300,'Vendor Rebates',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.SUBCLASS_ID,tr.SUBCLASS_NAME,tr.TRAN_QTY,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.TRAN_COST_AMT,tr.SALE_DATE,tr.ITEM_ID,111,tr.TRAN_GL_DATE,tr.SHIP_DATE,tr.TRAN_COGS_AMT
+SELECT 300,'Vendor Rebates',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.SUBCLASS_ID,tr.SUBCLASS_NAME,tr.TRAN_QTY,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.TRAN_COST_AMT,tr.SALE_DATE,tr.ITEM_ID,111,tr.TRAN_GL_DATE,tr.SHIP_DATE,round(tr.TRAN_COGS_AMT,2) AS TRAN_COGS_AMT
 ,COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AS start_date,
 COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) AS end_date,
 COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) AS percentage,
@@ -113,7 +112,7 @@ CASE
 	WHEN tr.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
 	THEN 'Y'
 	ELSE 'N'
-END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * tr.tran_cogs_amt
+END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * round(tr.tran_cogs_amt,2)
 	WHEN CASE 
 	WHEN tr.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
 	THEN 'Y'
@@ -369,3 +368,7 @@ GROUP BY SKU,START_DATE,END_DATE,PERCENTAGE,DOLLAR_AMOUNT,BILLING_PERIOD,BRAND_S
 
 
 SELECT * FROM ods.CURR_ITEMS WHERE ITEM_TYPE = 'Other Charge' AND ITEM_ID IN ('149998','150001','149999','150000','150002','167942','171783','46805','31184','23431','7735','31091','31185') AND FC_ID =2
+
+
+
+SELECT * FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID = 111 and tr.sku = '662166666553'
