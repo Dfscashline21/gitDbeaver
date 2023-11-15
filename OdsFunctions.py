@@ -177,7 +177,8 @@ spOrderCapture = {
     "19 - Copy stage data to ods.order_detail":
         """
         insert into ods.order_detail_discounts
-        select socd.*,current_timestamp
+        select socd.ORDER_ID,socd.ITEM_ID,socd.DISCOUNT_ID,socd.DISCOUNT_TYPE,socd.RULE_ID,socd.RULE_PCT_OFF,socd.RULE_AMT_OFF,socd.PCT_OFF_APPLIED,socd.START_PRICE,socd.BASE_DISCOUNT_AMT,socd.DISCOUNT_AMT,socd.UNITS_APPLIED,socd.BASE_AMT_OFF_APPLIED,socd.AMT_OFF_APPLIED,socd.BASE_TAX_DISCOUNT,socd.TAX_DISCOUNT,socd.BASE_DUTY_DISCOUNT,socd.DUTY_DISCOUNT,socd.INSERT_UTC_DATETIME,socd.UPDATE_UTC_DATETIME,socd.MESSAGE_UUID,socd.RULE_NAME,socd.RULE_GROUP,socd.ODS_PROCESSED_AT
+        ,current_timestamp,socd.SPONSORED_BY,socd.SPONSORED_PERCENTAGE
         from staging.stg_order_capture_detail_discounts_v1 socd
         inner join staging.stg_order_capture_v1 soc on socd.order_id = soc.order_id --and socd.message_uuid = soc.message_uuid
         inner join staging.order_work_list ol on socd.order_id = ol.order_id --and socd.message_uuid = ol.message_uuid
@@ -185,7 +186,8 @@ spOrderCapture = {
     "20 - Copy stage data to  staging.stg_order_capture_detail_discounts_v1_processed":
         """
         insert into staging.stg_order_capture_detail_discounts_v1_processed
-        select socd.*,current_timestamp
+        select socd.ORDER_ID,socd.ITEM_ID,socd.DISCOUNT_ID,socd.DISCOUNT_TYPE,socd.RULE_ID,socd.RULE_PCT_OFF,socd.RULE_AMT_OFF,socd.PCT_OFF_APPLIED,socd.START_PRICE,socd.BASE_DISCOUNT_AMT,socd.DISCOUNT_AMT,socd.UNITS_APPLIED,socd.BASE_AMT_OFF_APPLIED,socd.AMT_OFF_APPLIED,socd.BASE_TAX_DISCOUNT,socd.TAX_DISCOUNT,socd.BASE_DUTY_DISCOUNT,socd.DUTY_DISCOUNT,socd.INSERT_UTC_DATETIME,socd.UPDATE_UTC_DATETIME,socd.MESSAGE_UUID,socd.RULE_NAME,socd.RULE_GROUP,socd.ODS_PROCESSED_AT
+        ,current_timestamp,socd.SPONSORED_BY,socd.SPONSORED_PERCENTAGE
         from staging.stg_order_capture_detail_discounts_v1 socd
         inner join staging.order_work_list ol on socd.order_id = ol.order_id --and socd.message_uuid = ol.message_uuid
         """,
