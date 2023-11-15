@@ -10,6 +10,7 @@ ALTER Table ods.ORDER_DETAIL_DISCOUNTS
 ADD COLUMN SPONSORED_BY varchar(100), SPONSORED_PERCENTAGE float;
 
 SELECT * FROM staging.ODS_MESSAGE_QUEUE 
+ 
 
 
                         
