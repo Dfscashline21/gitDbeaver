@@ -191,7 +191,7 @@ spOrderCapture = {
         from staging.stg_order_capture_detail_discounts_v1 socd
         inner join staging.order_work_list ol on socd.order_id = ol.order_id --and socd.message_uuid = ol.message_uuid
         """,
-    "21 - Copy stage data to ods.order_payments with Braintree":
+    "21 - Copy stage data to ods.order_payments with Braintree ":
         """
         insert into ods.order_payments
         select sop.*, current_timestamp, 'cc', null, null, convert_timezone('UTC', 'America/Los_Angeles',soc.created_at)::date, null
