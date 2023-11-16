@@ -1101,7 +1101,7 @@ spOrderFulfillment = {
          """
         insert into ods.transactions (tran_type, tran_sub_type_id, tran_sub_type, tran_date, order_type, order_id, increment_id, order_line_id, customer_id, company_id, location_id, magento_location_id,
                 sku, parent_item_id, group_id ,group_name, category_id, category_name, sub_category_id, sub_category_name, class_id , class_name ,
-                subclass_id, subclass_name,tran_qty, tran_amt, created_at, sale_date, item_id, tran_cost_amt, tran_gl_date, ship_date,rebate_start_date,rebate_end_date,rebate_percentage,rebate_dollar_amount,rebate_billing_period,REBATE_TYPE,REBATE_CALC_TYPE,REBATE_BILLING_METHOD) 
+                subclass_id, subclass_name,tran_qty, tran_amt, created_at, sale_date, item_id, tran_cost_amt, tran_gl_date, ship_date,rebate_start_date,rebate_end_date,rebate_percentage,rebate_dollar_amount,rebate_billing_period,REBATE_TYPE,REBATE_CALC_TYPE,REBATE_BILLING_METHOD,REBATE_TOTAL) 
         select 300 as tran_type, 111, 'Vendor Rebates'  as tran_sub_type, sof.tran_date, 'order' as order_type, sof.order_id, sof.increment_id,
         sof.item_id as order_line_id, sof.customer_id,1, sof.fc, sof.magento_fc, sof.sku, sof.parent_item_id, ci.group_id, ci.group_name,
         ci.item_category_id, ci.item_category_name, ci.subcategory_id, ci.subcategory_name, ci.class_id, ci.class_name, ci.subclass_id, ci.subclass_name,
@@ -1131,6 +1131,18 @@ spOrderFulfillment = {
             WHEN COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN 'Percentage of COGS' 
         END AS rebate_calc_type
         ,COALESCE(vr.billing_method_id,vrin.billing_method_id,br.billing_method_id,brin.billing_method_id) AS billing_method
+        , CASE	
+            WHEN CASE 
+            WHEN sof.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (sof.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+            THEN 'Y'
+            ELSE 'N'
+        END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * (sof.units_shipped * ci.net_unit_cost)
+            WHEN CASE 
+            WHEN sof.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (sof.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+            THEN 'Y'
+            ELSE 'N'
+        END ='Y' AND COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) IS NOT NULL THEN COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) * (sof.units_shipped )
+        END AS rebate_total
         from staging.stage_order_fulfillment sof
         left outer join ods.ns_fc_xref nfx on sof.fc = nfx.ns_fc_id
         left outer join ods.curr_items ci on sof.sku = ci.item_name and coalesce(nfx.ods_fc_id,2)  = ci.fc_id

@@ -5,6 +5,7 @@ SELECT * FROM ods."TRANSACTIONS" tr
 LIMIT 10 
 
 
+
 --- Adjust transaction data for additional fields 
 ALTER TABLE TM_IGLOO_ODS_STG.ods."TRANSACTIONS" 
 ADD  REBATE_START_DATE TIMESTAMPTZ,
@@ -93,9 +94,9 @@ DELETE FROM ods."TRANSACTIONS" tr
 WHERE tr.TRAN_SUB_TYPE_ID =111 AND tr.FULFILLMENT_TRAN_ID IS NOT NULL AND tr.TRAN_GL_DATE <'2023-10-30'
 
 ---Built on Transactions Table
-insert into ods.transactions (TRAN_TYPE,TRAN_SUB_TYPE,TRAN_DATE,ORDER_TYPE,ORDER_ID,ORDER_LINE_ID,COMPANY_ID,LOCATION_ID,CUSTOMER_ID,SKU,GROUP_ID,GROUP_NAME,CATEGORY_ID,CATEGORY_NAME,SUB_CATEGORY_ID,SUB_CATEGORY_NAME,CLASS_ID,CLASS_NAME,SUBCLASS_ID,SUBCLASS_NAME,TRAN_QTY,CREATED_AT,INCREMENT_ID,MAGENTO_LOCATION_ID,TRAN_COST_AMT,SALE_DATE,ITEM_ID,TRAN_SUB_TYPE_ID,TRAN_GL_DATE,SHIP_DATE,TRAN_COGS_AMT,REBATE_START_DATE,REBATE_END_DATE,REBATE_PERCENTAGE,REBATE_DOLLAR_AMOUNT,REBATE_BILLING_PERIOD,REBATE_TYPE,REBATE_CALC_TYPE,TRAN_AMT,REBATE_BILLING_METHOD,FULFILLMENT_TRAN_ID
+insert into ods.transactions (TRAN_TYPE,TRAN_SUB_TYPE,TRAN_DATE,ORDER_TYPE,ORDER_ID,ORDER_LINE_ID,COMPANY_ID,LOCATION_ID,CUSTOMER_ID,SKU,GROUP_ID,GROUP_NAME,CATEGORY_ID,CATEGORY_NAME,SUB_CATEGORY_ID,SUB_CATEGORY_NAME,CLASS_ID,CLASS_NAME,SUBCLASS_ID,SUBCLASS_NAME,TRAN_QTY,CREATED_AT,INCREMENT_ID,MAGENTO_LOCATION_ID,TRAN_COST_AMT,SALE_DATE,ITEM_ID,TRAN_SUB_TYPE_ID,TRAN_GL_DATE,SHIP_DATE,TRAN_COGS_AMT,REBATE_START_DATE,REBATE_END_DATE,REBATE_PERCENTAGE,REBATE_DOLLAR_AMOUNT,REBATE_BILLING_PERIOD,REBATE_TYPE,REBATE_CALC_TYPE,TRAN_AMT,REBATE_BILLING_METHOD,FULFILLMENT_TRAN_ID,REBATE_TOTAL
 )
-SELECT 300,'Vendor Rebates',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.SUBCLASS_ID,tr.SUBCLASS_NAME,tr.TRAN_QTY,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.TRAN_COST_AMT,tr.SALE_DATE,tr.ITEM_ID,111,tr.TRAN_GL_DATE,tr.SHIP_DATE,round(tr.TRAN_COGS_AMT,2) AS TRAN_COGS_AMT
+SELECT 300,'Vendor Rebates',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.SUBCLASS_ID,tr.SUBCLASS_NAME,tr.TRAN_QTY,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.TRAN_COST_AMT,tr.SALE_DATE,tr.ITEM_ID,111,tr.TRAN_GL_DATE,tr.SHIP_DATE,tr.TRAN_COGS_AMT AS TRAN_COGS_AMT
 ,COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AS start_date,
 COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) AS end_date,
 COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) AS percentage,
@@ -109,18 +110,30 @@ END AS rebate_calc_type
 ,
 CASE	
 	WHEN CASE 
-	WHEN tr.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+	WHEN tr.tran_gl_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_gl_date<= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
 	THEN 'Y'
 	ELSE 'N'
-END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * round(tr.tran_cogs_amt,2)
+END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * tr.tran_cogs_amt
 	WHEN CASE 
-	WHEN tr.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+	WHEN tr.tran_gl_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_gl_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
 	THEN 'Y'
 	ELSE 'N'
 END ='Y' AND COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) IS NOT NULL THEN COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) * (tran_qty)
 END AS rebate_total	
 ,COALESCE(vr.billing_method_id,vrin.billing_method_id,br.billing_method_id,brin.billing_method_id) AS billing_method,
 tr.tran_id
+,CASE	
+	WHEN CASE 
+	WHEN tr.tran_gl_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_gl_date<= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+	THEN 'Y'
+	ELSE 'N'
+END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * tr.tran_cogs_amt
+	WHEN CASE 
+	WHEN tr.tran_gl_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_gl_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+	THEN 'Y'
+	ELSE 'N'
+END ='Y' AND COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) IS NOT NULL THEN COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) * (tran_qty)
+END AS rebate_total	
 FROM ods.TRANSACTIONS_PROD tr
 LEFT JOIN ods.NS_FC_XREF fc ON tr.LOCATION_ID = fc.NS_FC_ID 
 LEFT JOIN ods.CURR_ITEMS ci ON ci.ITEM_ID = tr.ITEM_ID AND fc.ODS_FC_ID= ci.FC_ID 
@@ -131,7 +144,7 @@ LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILL
 WHERE tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tr.TRAN_SUB_TYPE_ID =16 AND tr.TRAN_TYPE =300
 AND fc.FC_TYPE !='drinks' AND COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) IS NOT NULL
  
-SELECT * FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID  =111
+SELECT * FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID  =111 AND tr.sku ='013562494033' AND tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} 
 
 insert into ods.transactions (tran_type, tran_sub_type_id, tran_sub_type, tran_date, order_type, order_id, increment_id, order_line_id, customer_id, company_id, location_id, magento_location_id,
         sku, parent_item_id, group_id ,group_name, category_id, category_name, sub_category_id, sub_category_name, class_id , class_name ,
@@ -193,11 +206,11 @@ WHERE tt.rebate_start_date IS NOT NULL
 -- rebate only report grouped 
 SELECT reb.BRAND_NAME,reb.REBATE_BILLING_METHOD,reb.SKU,reb.DESCRIPTION,reb.REBATE_TYPE,reb.REBATE_BILLING_PERIOD,reb.REBATE_START_DATE,reb.REBATE_END_DATE,sum(TRAN_QTY) AS TRAN_QTY,sum(reb.TRAN_COGS_AMT) AS TRAN_COGS_AMT,reb.REBATE_PERCENTAGE,reb.REBATE_DOLLAR_AMOUNT,sum(reb.TRAN_AMT) AS TRAN_AMT ,reb.LIST_ITEM_NAME,reb.CUST_VEND
 from(
-WITH test AS (SELECT ci.brand_name,tr.REBATE_billing_method,tr.sku,ci.description, tr.REBATE_TYPE,tr.REBATE_BILLING_PERIOD,tr.REBATE_START_DATE, tr.REBATE_END_DATE, tr.TRAN_QTY ,tr.TRAN_COGS_AMT ,tr.REBATE_PERCENTAGE,tr.REBATE_DOLLAR_AMOUNT,tr.TRAN_AMT  
+WITH test AS (SELECT ci.brand_name,tr.REBATE_billing_method,tr.sku,ci.description, tr.REBATE_TYPE,tr.REBATE_BILLING_PERIOD,tr.REBATE_START_DATE, tr.REBATE_END_DATE, tr.TRAN_QTY ,round(tr.TRAN_COGS_AMT,1) AS tran_cogs_amt ,tr.REBATE_PERCENTAGE,tr.REBATE_DOLLAR_AMOUNT,tr.TRAN_AMT  
 FROM ods."TRANSACTIONS" tr
 LEFT JOIN ods.NS_FC_XREF ns ON ns.NS_FC_ID = tr.LOCATION_ID 
-LEFT JOIN ods.CURR_ITEMS_PROD ci ON ci.item_name = tr.SKU  AND COALESCE(ci.fc_id,2) = ns.ODS_FC_ID  
-WHERE tr.TRAN_SUB_TYPE_ID in (111,16) AND tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date}) 
+LEFT JOIN ods.CURR_ITEMS ci ON ci.item_name = tr.SKU  AND COALESCE(ci.fc_id,2) = ns.ODS_FC_ID  
+WHERE tr.TRAN_SUB_TYPE_ID in (111) AND tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tr.sku = '728119515351') 
 SELECT tt.*,bm.LIST_ITEM_NAME,
 COALESCE(mt.BILLING_CUSTOMER_ID ,mt.VENDOR_ID) AS cust_vend FROM test tt
 LEFT JOIN (SELECT DISTINCT BRAND_ID,BRAND_RECORDS_NAME ,BILLING_CUSTOMER_ID ,VENDOR_ID  FROM ods.NS_VENDOR_REBATES ) mt ON mt.BRAND_RECORDS_NAME = tt.BRAND_NAME 
@@ -205,13 +218,15 @@ LEFT JOIN ods.BILLING_METHOD bm ON bm.LIST_ID =tt.rebate_billing_method
 WHERE tt.rebate_start_date IS NOT NULL) reb 
 group BY reb.BRAND_NAME,reb.REBATE_BILLING_METHOD,reb.SKU,reb.DESCRIPTION,reb.REBATE_TYPE,reb.REBATE_BILLING_PERIOD,reb.REBATE_START_DATE,reb.REBATE_END_DATE,reb.REBATE_PERCENTAGE,reb.REBATE_DOLLAR_AMOUNT,reb.LIST_ITEM_NAME,reb.CUST_VEND
 
+SELECT * FROM ods."TRANSACTIONS" tr LIMIT 10
+
 SELECT * FROM ods.CURR_ITEMS_PROD cur WHERE cur.ITEM_NAME ='042272005475'
 
 SELECT *  
 FROM ods."TRANSACTIONS" tr
 LEFT JOIN ods.NS_FC_XREF ns ON ns.NS_FC_ID = tr.LOCATION_ID 
 LEFT JOIN ods.CURR_ITEMS_PROD ci ON ci.item_name = tr.SKU  AND COALESCE(ci.fc_id,2) = ns.ODS_FC_ID  
-WHERE tr.TRAN_SUB_TYPE_ID in (111) AND tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND ci.BRAND_NAME IS null
+WHERE tr.TRAN_SUB_TYPE_ID in (111) AND tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tr.sku ='728119515351'
 
 SELECT * FROM ods.CURR_ITEMS_PROD 
 
@@ -267,8 +282,9 @@ WHERE tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tr.TRAN_SUB_TY
 AND fc.FC_TYPE !='drinks' AND COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) IS NOT NULL
  
 
+DELETE FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID =111 AND tr.NS_TRAN_ID IS NOT NULL 
 
-INSERT INTO ods."TRANSACTIONS" (sku,tran_type ,TRAN_SUB_TYPE_ID ,TRAN_SUB_TYPE,tran_date ,TRAN_COGS_AMT,CREATED_AT,ITEM_ID,TRAN_GL_DATE,LOCATION_ID,REBATE_START_DATE,REBATE_END_DATE,REBATE_PERCENTAGE,REBATE_DOLLAR_AMOUNT,REBATE_BILLING_PERIOD,REBATE_TYPE,REBATE_CALC_TYPE,TRAN_AMT,REBATE_BILLING_METHOD,NS_TRAN_ID)
+INSERT INTO ods."TRANSACTIONS" (sku,tran_type ,TRAN_SUB_TYPE_ID ,TRAN_SUB_TYPE,tran_date ,TRAN_COGS_AMT,CREATED_AT,ITEM_ID,TRAN_GL_DATE,LOCATION_ID,REBATE_START_DATE,REBATE_END_DATE,REBATE_PERCENTAGE,REBATE_DOLLAR_AMOUNT,REBATE_BILLING_PERIOD,REBATE_TYPE,REBATE_CALC_TYPE,TRAN_AMT,REBATE_BILLING_METHOD,NS_TRAN_ID,REBATE_TOTAL)
 SELECT ci.ITEM_name, 300,111,'Vendor Rebates',he.TRANDATE::TIMESTAMP_NTZ ,de.amount, de.DATE_CREATED::TIMESTAMP_NTZ ,de.ITEM_ID , he.TRANDATE,de.LOCATION_ID ,
 COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AS start_date,
 COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) AS end_date,
@@ -294,6 +310,19 @@ END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentag
 END ='Y' AND COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) IS NOT NULL THEN COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) * (0)
 END AS rebate_total	
 ,COALESCE(vr.billing_method_id,vrin.billing_method_id,br.billing_method_id,brin.billing_method_id) AS billing_method,he.transaction_id
+,
+CASE	
+	WHEN CASE 
+	WHEN he.trandate >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (he.trandate <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+	THEN 'Y'
+	ELSE 'N'
+END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * de.amount
+	WHEN CASE 
+	WHEN he.trandate >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (he.trandate <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+	THEN 'Y'
+	ELSE 'N'
+END ='Y' AND COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) IS NOT NULL THEN COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) * (0)
+END AS rebate_total	
 FROM ods.NS_COSTADJ_DETAIL de 
 INNER JOIN ods.NS_COSTADJ_HEADER he ON de.TRANSACTION_ID =he.TRANSACTION_ID 
 FULL OUTER JOIN (SELECT DISTINCT tr.ns_tran_id FROM ods."TRANSACTIONS" tr) trn ON trn.ns_tran_id = de.TRANSACTION_ID 
@@ -317,7 +346,7 @@ SELECT * FROM ods."TRANSACTIONS"  WHERE TRAN_SUB_TYPE_ID =111 AND NS_TRAN_ID IS 
 SELECT 
 SKU,sum(tran_qty) AS quantity , sum(TRAN_COGS_AMT) AS COGS ,sum(PB_COST) AS pb_cogs,START_DATE,END_DATE,PERCENTAGE,DOLLAR_AMOUNT,BILLING_PERIOD,BRAND_SKU,REBATE_CALC_TYPE,sum(REBATE_TOTAL) AS fiforebate,sum(PB_REBATE_TOTAL) AS pb_rebate,BILLING_METHOD
 FROM (
-SELECT 300,'Vendor Rebates',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.SUBCLASS_ID,tr.SUBCLASS_NAME,tr.TRAN_QTY,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.TRAN_COST_AMT,tr.SALE_DATE,tr.ITEM_ID,111,tr.TRAN_GL_DATE,tr.SHIP_DATE,tr.TRAN_COGS_AMT,tr.TRAN_AMT AS pb_cost
+SELECT 300,'Vendor Rebates',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.SUBCLASS_ID,tr.SUBCLASS_NAME,tr.TRAN_QTY,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.TRAN_COST_AMT,tr.SALE_DATE,tr.ITEM_ID,111,tr.TRAN_GL_DATE,tr.SHIP_DATE,round(tr.TRAN_COGS_AMT,2) AS TRAN_COGS_AMT,tr.TRAN_AMT AS pb_cost
 ,COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AS start_date,
 COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) AS end_date,
 COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) AS percentage,
@@ -331,24 +360,24 @@ END AS rebate_calc_type
 ,
 CASE	
 	WHEN CASE 
-	WHEN tr.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+	WHEN tr.tran_gl_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_gl_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
 	THEN 'Y'
 	ELSE 'N'
-END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * tr.tran_cogs_amt
+END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * round(tr.tran_cogs_amt,2)
 	WHEN CASE 
-	WHEN tr.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+	WHEN tr.tran_gl_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_gl_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
 	THEN 'Y'
 	ELSE 'N'
 END ='Y' AND COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) IS NOT NULL THEN COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) * (tran_qty)
 END AS rebate_total	
 ,CASE	
 	WHEN CASE 
-	WHEN tr.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+	WHEN tr.tran_gl_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_gl_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
 	THEN 'Y'
 	ELSE 'N'
 END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * tr.tran_amt
 	WHEN CASE 
-	WHEN tr.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
+	WHEN tr.tran_gl_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_gl_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
 	THEN 'Y'
 	ELSE 'N'
 END ='Y' AND COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) IS NOT NULL THEN COALESCE(vr.dollar_amount,vrin.dollar_amount,br.dollar_amount,brin.dollar_amount) * (tran_qty)
@@ -369,6 +398,10 @@ GROUP BY SKU,START_DATE,END_DATE,PERCENTAGE,DOLLAR_AMOUNT,BILLING_PERIOD,BRAND_S
 
 SELECT * FROM ods.CURR_ITEMS WHERE ITEM_TYPE = 'Other Charge' AND ITEM_ID IN ('149998','150001','149999','150000','150002','167942','171783','46805','31184','23431','7735','31091','31185') AND FC_ID =2
 
+SELECT * FROM ods.TRANSACTIONS_PROD WHERE sku ='861555000125-G' AND TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tran_cogs_amt IS null
 
+SELECT * FROM ods."TRANSACTIONS" tr WHERE  TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tr.sku ='861555000125-G' AND tr.TRAN_SUB_TYPE_ID =111
 
-SELECT * FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID = 111 and tr.sku = '662166666553'
+SELECT * FROM ods.GL_MAP_DETAIL 
+
+SELECT * FROM ods.GL_MAP_HEADER 
