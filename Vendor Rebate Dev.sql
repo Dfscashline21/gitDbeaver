@@ -317,7 +317,7 @@ SELECT * FROM ods."TRANSACTIONS"  WHERE TRAN_SUB_TYPE_ID =111 AND NS_TRAN_ID IS 
 SELECT 
 SKU,sum(tran_qty) AS quantity , sum(TRAN_COGS_AMT) AS COGS ,sum(PB_COST) AS pb_cogs,START_DATE,END_DATE,PERCENTAGE,DOLLAR_AMOUNT,BILLING_PERIOD,BRAND_SKU,REBATE_CALC_TYPE,sum(REBATE_TOTAL) AS fiforebate,sum(PB_REBATE_TOTAL) AS pb_rebate,BILLING_METHOD
 FROM (
-SELECT 300,'Vendor Rebates',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.SUBCLASS_ID,tr.SUBCLASS_NAME,tr.TRAN_QTY,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.TRAN_COST_AMT,tr.SALE_DATE,tr.ITEM_ID,111,tr.TRAN_GL_DATE,tr.SHIP_DATE,tr.TRAN_COGS_AMT,tr.TRAN_AMT AS pb_cost
+SELECT 300,'Vendor Rebates',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.SUBCLASS_ID,tr.SUBCLASS_NAME,tr.TRAN_QTY,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.TRAN_COST_AMT,tr.SALE_DATE,tr.ITEM_ID,111,tr.TRAN_GL_DATE,tr.SHIP_DATE,tr.TRAN_COGS_AMT,tr.TRAN_cost_AMT AS pb_cost
 ,COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AS start_date,
 COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) AS end_date,
 COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) AS percentage,
@@ -346,7 +346,7 @@ END AS rebate_total
 	WHEN tr.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
 	THEN 'Y'
 	ELSE 'N'
-END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * tr.tran_amt
+END ='Y' AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) IS NOT NULL THEN (COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage) / 100) * tr.tran_cost_amt
 	WHEN CASE 
 	WHEN tr.tran_date >= COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AND (tr.tran_date <= COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) OR COALESCE(vr.end_DATE,vrin.end_date,br.end_date,brin.end_date) IS NULL)
 	THEN 'Y'
@@ -390,5 +390,7 @@ SELECT * FROM staging.STG_VENDOR_REBATES WHERE BRAND_RECORDS_NAME = 'Applegate'
 
 SELECT * FROM ods.NS_VENDOR_REBATES WHERE BRAND_RECORDS_NAME = 'Mad Hippie'
 
+
+SELECT * FROM ods.TRANSACTIONS_PROD tr WHERE tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tr.TRAN_SUB_TYPE_ID =16 
 
 
