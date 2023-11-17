@@ -416,5 +416,46 @@ LEFT JOIN ods.BILLING_METHOD bm ON bm.LIST_ID =tt.rebate_billing_method) reb
 group BY reb.BRAND_NAME,reb.REBATE_BILLING_METHOD,reb.SKU,reb.DESCRIPTION,reb.REBATE_TYPE,reb.REBATE_BILLING_PERIOD,reb.REBATE_START_DATE,reb.REBATE_END_DATE,reb.REBATE_PERCENTAGE,reb.REBATE_DOLLAR_AMOUNT,reb.LIST_ITEM_NAME,reb.CUST_VEND)
 GROUP BY BRAND_NAME,SKU,DESCRIPTION
 
+SELECT * FROM ods."TRANSACTIONS" tr 
+INNER JOIN (
+SELECT tr.ORDER_LINE_ID ,count(tr.ORDER_LINE_ID) FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID =16 AND tr.TRAN_GL_DATE = '2023-11-16'
+GROUP BY tr.ORDER_LINE_ID HAVING count(tr.ORDER_LINE_ID) >1) tes ON tes.order_line_id = tr.order_line_id
+WHERE tr.TRAN_SUB_TYPE_ID =16 AND tr.TRAN_GL_DATE ='2023-11-16' 
 
-SELECT * FROM ods.TRANSACTIONS_TEST tt
+SELECT * FROM ods."TRANSACTIONS" trn WHERE trn.TRAN_GL_DATE ='2023-11-16' AND trn.TRAN_SUB_TYPE_ID =16
+
+SELECT * FROM staging.STAGE_ORDER_FULFILLMENT WHERE MESSAGE_UUID ='b96ac0f2-9567-0a5f-77b9-36a5268876fc'
+
+
+
+select 300 as tran_type, 16, 'Product'  as tran_sub_type, sof.tran_date, 'order' as order_type, sof.order_id, sof.increment_id,
+        sof.item_id as order_line_id, sof.customer_id,1, sof.fc, sof.magento_fc, sof.sku, sof.parent_item_id, 
+        sof.units_shipped ,
+        round(coalesce(allocated_price, (sof.qty_ordered * (base_price + coalesce(base_discount_amt,0)))- (coalesce(qty_refunded,0) * coalesce(credit_price,0))) - (sof.qty_ordered - sof.units_shipped)::numeric(12,2) * coalesce(sof.tpa_unit_amt,0),2), 
+        current_timestamp, sof.sale_date,
+        convert_timezone('UTC', 'America/Los_Angeles', sof.tran_date )::date, 
+        convert_timezone('UTC', 'America/Los_Angeles', sof.fulfilled_at)::date
+        from staging.stage_order_fulfillment sof
+        where sof.units_shipped  > 0 and sof.product_type <> 'bundle'  
+
+SELECT * FROM ods.CURR_ITEMS ci WHERE ci.ITEM_NAME = '853665005091'     
+
+SELECT * FROM STAGING.STAGE_ORDER_FULFILLMENT WHERE INCREMENT_ID  ='130752034'
+
+SELECT tr.SALE_DATE  ,tr.ORDER_LINE_ID ,count(tr.ORDER_LINE_ID) FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID =16
+GROUP BY tr.SALE_DATE  ,tr.ORDER_LINE_ID
+HAVING count(tr.ORDER_LINE_ID) >1
+
+SELECT * FROM ods.NS_VENDOR_REBATES 
+
+SELECT * FROM ods."TRANSACTIONS" tr WHERE tr.ORDER_LINE_ID ='305207396'
+
+SELECT * FROM ods."TRANSACTIONS" WHERE ORDER_LINE_ID ='305237330'
+
+SELECT * FROM STAGING.ODS_MESSAGE_QUEUE_PROCESSED  WHERE ORDER_ID ='44365411'
+
+SELECT * FROM ods.ORDER_DETAIL  WHERE ORDER_ID ='44365411'
+
+SELECT * FROM STAGING.ODS_MESSAGE_QUEUE_PROCESSED  WHERE ORDER_ID ='44365411'
+        
+SELECT DISTINCT REBATE_BILLING_METHOD  FROM ods.TRANSACTIONS WHERE REBATE_BILLING_METHOD IS NOT null
