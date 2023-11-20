@@ -26,7 +26,7 @@ spPostRebates = {
                 LEFT OUTER JOIN ods.ns_vendor_rebates nvr ON svr.rebate_agreement_id = nvr.rebate_agreement_id
                 WHERE nvr.rebate_agreement_id IS NULL  
                         """,
-                    "2 - Update existing records in ODS.NS_VENDOR_REBATE";
+                    "2 - Update existing records in ODS.NS_VENDOR_REBATE":
                     """
                   UPDATE ods.NS_VENDOR_REBATES 
                       SET 
