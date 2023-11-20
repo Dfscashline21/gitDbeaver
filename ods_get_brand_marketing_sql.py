@@ -20,15 +20,7 @@ spPostBrandMarketing = {
                     LEFT OUTER JOIN ods.brand_marketing bm ON br.VENDOR_FUNDING__BRAND_MARKE_ID = bm.VENDOR_FUNDING__BRAND_MARKE_ID
                     WHERE bm.VENDOR_FUNDING__BRAND_MARKE_ID IS NULL 
                     """,
-                    "2 - create Brand Marketing transactions":
-                    """
-                    insert into ods.transactions (TRAN_TYPE,TRAN_SUB_TYPE,TRAN_DATE,COMPANY_ID,CREATED_AT,TRAN_SUB_TYPE_ID,TRAN_GL_DATE,TRAN_AMT,BRAND_MARKETING_ID)
-                    SELECT 300,'Brand Marketing Fees',bm.START_DATE::TIMESTAMP_NTZ,'1',bm.ODS_PROCESSED_DATE::TIMESTAMP_NTZ,112,bm.START_DATE ::date ,bm.TOTAL_COST, bm.VENDOR_FUNDING__BRAND_MARKE_ID  
-                    FROM ods.brand_marketing bm
-                    FULL OUTER JOIN (SELECT DISTINCT tr.BRAND_MARKETING_ID FROM ods."TRANSACTIONS" tr ) trn ON trn.brand_marketing_id = bm.VENDOR_FUNDING__BRAND_MARKE_ID 
-                    WHERE trn.brand_marketing_iD IS NULL AND bm.START_DATE IS NOT null
-                    """,
-                    "3 - Update existing records in ODS.BRAND_MARKETING":
+                    "2 - Update existing records in ODS.BRAND_MARKETING":
                     """
                   UPDATE ods.BRAND_MARKETING 
                       SET 
@@ -41,5 +33,14 @@ spPostBrandMarketing = {
                       BRAND_MARKETING.VENDOR_ID  = upd.VENDOR_ID 
                       FROM (SELECT * FROM staging.STG_BRAND_MARKETING) upd
                       WHERE BRAND_MARKETING.VENDOR_FUNDING_BRAN_MARKE_ID  = upd.VENDOR_FUNDING_BRAN_MARKE_ID"""
-                    
+                    ,
+                    "3 - create Brand Marketing transactions":
+                    """
+                    insert into ods.transactions (TRAN_TYPE,TRAN_SUB_TYPE,TRAN_DATE,COMPANY_ID,CREATED_AT,TRAN_SUB_TYPE_ID,TRAN_GL_DATE,TRAN_AMT,BRAND_MARKETING_ID)
+                    SELECT 300,'Brand Marketing Fees',bm.START_DATE::TIMESTAMP_NTZ,'1',bm.ODS_PROCESSED_DATE::TIMESTAMP_NTZ,112,bm.START_DATE ::date ,bm.TOTAL_COST, bm.VENDOR_FUNDING__BRAND_MARKE_ID  
+                    FROM ods.brand_marketing bm
+                    FULL OUTER JOIN (SELECT DISTINCT tr.BRAND_MARKETING_ID FROM ods."TRANSACTIONS" tr ) trn ON trn.brand_marketing_id = bm.VENDOR_FUNDING__BRAND_MARKE_ID 
+                    WHERE trn.brand_marketing_iD IS NULL AND bm.START_DATE IS NOT null
+                    """
+
 }
