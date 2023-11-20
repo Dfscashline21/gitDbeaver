@@ -24,13 +24,9 @@ spPostBrandMarketing = {
                     """
                   UPDATE ods.BRAND_MARKETING 
                       SET 
-                      BRAND_MARKETING.BILLING_PERIOD = upd.BILLING_PERIOD, 
-                      BRAND_MARKETING.BRAND_RECORDS_NAME  = upd.BRAND_RECORDS_NAME, 
-                      BRAND_MARKETING.DOLLAR_AMOUNT  = upd.DOLLAR_AMOUNT,
-                      BRAND_MARKETING.PERCENTAGE= upd.PERCENTAGE, 
-                      BRAND_MARKETING.BILLING_METHOD_ID  = upd.BILLING_METHOD_ID  , 
                       BRAND_MARKETING.BILLING_CUSTOMER_ID = upd.BILLING_CUSTOMER_ID, 
-                      BRAND_MARKETING.VENDOR_ID  = upd.VENDOR_ID 
+                      BRAND_MARKETING.BILLING_VENDOR_ID  = upd.BILLING_VENDOR_ID 
+                      BRAND_MARKETING.BILLING_METHOD  = upd.BILLING_METHOD 
                       FROM (SELECT * FROM staging.STG_BRAND_MARKETING) upd
                       WHERE BRAND_MARKETING.VENDOR_FUNDING_BRAN_MARKE_ID  = upd.VENDOR_FUNDING_BRAN_MARKE_ID"""
                     ,
