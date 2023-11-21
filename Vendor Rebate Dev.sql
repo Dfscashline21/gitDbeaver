@@ -1,10 +1,5 @@
 USE WAREHOUSE SNOWBALL_ODS
 
-
-SELECT * FROM ods."TRANSACTIONS" tr 
-LIMIT 10 
-
-
 --- Adjust transaction data for additional fields 
 ALTER TABLE TM_IGLOO_ODS_STG.ods."TRANSACTIONS" 
 ADD  REBATE_START_DATE TIMESTAMPTZ,
@@ -22,8 +17,6 @@ ADD  REBATE_START_DATE TIMESTAMPTZ,
 
 --update tables for gl mapping
 
-SELECT * FROM ods.TRANSACTION_SUB_TYPE
-
 INSERT INTO ods.TRANSACTION_SUB_TYPE  (TRAN_SUB_TYPE_ID,TRAN_TYPE,TRAN_SUB_TYPE)
 VALUES (111,300,'Vendor Rebates'),
 (112,300,'Brand Marketing Fees'),
@@ -34,65 +27,65 @@ VALUES (111,300,'Vendor Rebates'),
 (117,300,'Summer Care'),
 (118,300,'Coupon Vendor Funding')
 
-INSERT INTO ods.GL_MAP_HEADER (MAP_ID,TRAN_TYPE,TRAN_SUB_TYPE_ID,PRIORITY,MAP_DESCRIPTION)
-VALUES (174,300,111,9999,'Vendor Funding Invoice - Rebates '),
-(175,300,112,9999,'Vendor Funding Invoice - Brand Marketing Fees'),
-(176,300,113,9999,'Vendor Funding Invoice - TPR'),
-(177,300,114,9999,'Vendor Funding Invoice - A&S'),
-(178,300,115,9999,'Vendor Funding Invoice - Thrive Cash'),
-(179,300,116,9999,'Vendor Funding Invoice - Cold Care'),
-(180,300,117,9999,'Vendor Funding Invoice - Summer Care'),
-(181,300,118,9999,'Vendor Funding Invoice - Coupons'),
-(182,300,111,9999,'Vendor Funding Credit - Rebates '),
-(183,300,112,9999,'Vendor Funding Credit - Brand Marketing Fees'),
-(184,300,113,9999,'Vendor Funding Credit - TPR'),
-(185,300,114,9999,'Vendor Funding Credit - A&S'),
-(186,300,115,9999,'Vendor Funding Credit - Thrive Cash'),
-(187,300,116,9999,'Vendor Funding Credit - Cold Care'),
-(188,300,117,9999,'Vendor Funding Credit - Summer Care'),
-(189,300,118,9999,'Vendor Funding Credit - Coupons')
+-- Phase 2 
+--INSERT INTO ods.GL_MAP_HEADER (MAP_ID,TRAN_TYPE,TRAN_SUB_TYPE_ID,PRIORITY,MAP_DESCRIPTION)
+--VALUES (174,300,111,9999,'Vendor Funding Invoice - Rebates '),
+--(175,300,112,9999,'Vendor Funding Invoice - Brand Marketing Fees'),
+--(176,300,113,9999,'Vendor Funding Invoice - TPR'),
+--(177,300,114,9999,'Vendor Funding Invoice - A&S'),
+--(178,300,115,9999,'Vendor Funding Invoice - Thrive Cash'),
+--(179,300,116,9999,'Vendor Funding Invoice - Cold Care'),
+--(180,300,117,9999,'Vendor Funding Invoice - Summer Care'),
+--(181,300,118,9999,'Vendor Funding Invoice - Coupons'),
+--(182,300,111,9999,'Vendor Funding Credit - Rebates '),
+--(183,300,112,9999,'Vendor Funding Credit - Brand Marketing Fees'),
+--(184,300,113,9999,'Vendor Funding Credit - TPR'),
+--(185,300,114,9999,'Vendor Funding Credit - A&S'),
+--(186,300,115,9999,'Vendor Funding Credit - Thrive Cash'),
+--(187,300,116,9999,'Vendor Funding Credit - Cold Care'),
+--(188,300,117,9999,'Vendor Funding Credit - Summer Care'),
+--(189,300,118,9999,'Vendor Funding Credit - Coupons')
+--
+--INSERT INTO ods.GL_MAP_DETAIL (GMD_ID,MAP_ID,LINE_NUM,TRAN_COLUMN_NAME,DEBIT_ACCOUNT_ID,CREDIT_ACCOUNT_ID)
+--VALUES (359,174,1,'tran_amt',670,284),
+--(360,175,1,'tran_amt',670,570),
+--(361,176,1,'tran_amt',670,802),
+--(362,177,1,'tran_amt',670,885),
+--(363,178,1,'tran_amt',670,801),
+--(364,179,1,'tran_amt',670,648),
+--(365,180,1,'tran_amt',670,648),
+--(366,181,1,'tran_amt',670,277),
+--(367,182,1,'tran_amt',112,802),
+--(368,183,1,'tran_amt',112,570),
+--(369,184,1,'tran_amt',112,802),
+--(370,185,1,'tran_amt',112,885),
+--(371,186,1,'tran_amt',112,801),
+--(372,187,1,'tran_amt',112,648),
+--(373,188,1,'tran_amt',112,648),
+--(374,189,1,'tran_amt',112,802)
+--
+--insert INTO ods.GL_MAP_RULES (GMR_ID,MAP_ID,RULE_NUM)
+--VALUES (213,175,1),
+--(214,176,1),
+--(215,177,1),
+--(216,178,1),
+--(217,179,1),
+--(218,180,1),
+--(219,181,1),
+--(220,182,1),
+--(221,183,1),
+--(222,184,1),
+--(223,185,1),
+--(224,186,1),
+--(225,187,1),
+--(226,188,1),
+--(227,189,1);
 
-INSERT INTO ods.GL_MAP_DETAIL (GMD_ID,MAP_ID,LINE_NUM,TRAN_COLUMN_NAME,DEBIT_ACCOUNT_ID,CREDIT_ACCOUNT_ID)
-VALUES (359,174,1,'tran_amt',670,284),
-(360,175,1,'tran_amt',670,570),
-(361,176,1,'tran_amt',670,802),
-(362,177,1,'tran_amt',670,885),
-(363,178,1,'tran_amt',670,801),
-(364,179,1,'tran_amt',670,648),
-(365,180,1,'tran_amt',670,648),
-(366,181,1,'tran_amt',670,277),
-(367,182,1,'tran_amt',112,802),
-(368,183,1,'tran_amt',112,570),
-(369,184,1,'tran_amt',112,802),
-(370,185,1,'tran_amt',112,885),
-(371,186,1,'tran_amt',112,801),
-(372,187,1,'tran_amt',112,648),
-(373,188,1,'tran_amt',112,648),
-(374,189,1,'tran_amt',112,802)
-
-SELECT *FROM TM_IGLOO_ODS_STG.ods.GL_MAP_RULEs
-
-insert INTO ods.GL_MAP_RULES (GMR_ID,MAP_ID,RULE_NUM)
-VALUES (213,175,1),
-(214,176,1),
-(215,177,1),
-(216,178,1),
-(217,179,1),
-(218,180,1),
-(219,181,1),
-(220,182,1),
-(221,183,1),
-(222,184,1),
-(223,185,1),
-(224,186,1),
-(225,187,1),
-(226,188,1),
-(227,189,1);
-
+--remove test data
 DELETE FROM ods."TRANSACTIONS" tr 
 WHERE tr.TRAN_SUB_TYPE_ID =111 AND tr.FULFILLMENT_TRAN_ID IS NOT NULL AND tr.TRAN_GL_DATE <'2023-10-30'
 
----Built on Transactions Table
+---Built on Transactions Table Post fill
 insert into ods.transactions (TRAN_TYPE,TRAN_SUB_TYPE,TRAN_DATE,ORDER_TYPE,ORDER_ID,ORDER_LINE_ID,COMPANY_ID,LOCATION_ID,CUSTOMER_ID,SKU,GROUP_ID,GROUP_NAME,CATEGORY_ID,CATEGORY_NAME,SUB_CATEGORY_ID,SUB_CATEGORY_NAME,CLASS_ID,CLASS_NAME,SUBCLASS_ID,SUBCLASS_NAME,TRAN_QTY,CREATED_AT,INCREMENT_ID,MAGENTO_LOCATION_ID,TRAN_COST_AMT,SALE_DATE,ITEM_ID,TRAN_SUB_TYPE_ID,TRAN_GL_DATE,SHIP_DATE,TRAN_COGS_AMT,REBATE_START_DATE,REBATE_END_DATE,REBATE_PERCENTAGE,REBATE_DOLLAR_AMOUNT,REBATE_BILLING_PERIOD,REBATE_TYPE,REBATE_CALC_TYPE,TRAN_AMT,REBATE_BILLING_METHOD,FULFILLMENT_TRAN_ID
 )
 SELECT 300,'Vendor Rebates',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.SUBCLASS_ID,tr.SUBCLASS_NAME,tr.TRAN_QTY,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.TRAN_COST_AMT,tr.SALE_DATE,tr.ITEM_ID,111,tr.TRAN_GL_DATE,tr.SHIP_DATE,round(tr.TRAN_COGS_AMT,2) AS TRAN_COGS_AMT
@@ -131,8 +124,8 @@ LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILL
 WHERE tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tr.TRAN_SUB_TYPE_ID =16 AND tr.TRAN_TYPE =300
 AND fc.FC_TYPE !='drinks' AND COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) IS NOT NULL
  
-SELECT * FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID  =111
 
+--Live creation of Vendor Rebates ODSFUNCTIONS.PY
 insert into ods.transactions (tran_type, tran_sub_type_id, tran_sub_type, tran_date, order_type, order_id, increment_id, order_line_id, customer_id, company_id, location_id, magento_location_id,
         sku, parent_item_id, group_id ,group_name, category_id, category_name, sub_category_id, sub_category_name, class_id , class_name ,
         subclass_id, subclass_name,tran_qty, tran_amt, created_at, sale_date, item_id, tran_cost_amt, tran_gl_date, ship_date,rebate_start_date,rebate_end_date,rebate_percentage,rebate_dollar_amount,rebate_billing_period,REBATE_TYPE,REBATE_CALC_TYPE,REBATE_BILLING_METHOD)         
@@ -178,16 +171,16 @@ where sof.units_shipped  > 0 and sof.product_type <> 'bundle' AND COALESCE(vr.ST
 
 
 -- rebate only report
-WITH test AS (SELECT ci.brand_name,tr.REBATE_billing_method,tr.sku,ci.description, tr.REBATE_TYPE,tr.REBATE_BILLING_PERIOD,tr.REBATE_START_DATE, tr.REBATE_END_DATE, tr.TRAN_QTY ,tr.TRAN_AMT ,tr.TRAN_COGS_AMT ,tr.REBATE_PERCENTAGE,tr.REBATE_DOLLAR_AMOUNT,tr.TRAN_AMT  
-FROM ods."TRANSACTIONS" tr
-LEFT JOIN ods.CURR_ITEMS_PROD ci ON ci.item_name = tr.SKU  AND ci.fc_id = tr.MAGENTO_LOCATION_ID 
-WHERE tr.TRAN_SUB_TYPE_ID in (111,16) AND tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date}) 
-SELECT tt.*,bm.LIST_ITEM_NAME,
-COALESCE(mt.BILLING_CUSTOMER_ID ,mt.VENDOR_ID) AS cust_vend FROM test tt
-LEFT JOIN (SELECT DISTINCT BRAND_ID,BRAND_RECORDS_NAME ,BILLING_CUSTOMER_ID ,VENDOR_ID  FROM ods.NS_VENDOR_REBATES ) mt ON mt.BRAND_RECORDS_NAME = tt.BRAND_NAME 
-LEFT JOIN ods.BILLING_METHOD bm ON bm.LIST_ID =tt.rebate_billing_method
-WHERE tt.rebate_start_date IS NOT NULL
-
+--WITH test AS (SELECT ci.brand_name,tr.REBATE_billing_method,tr.sku,ci.description, tr.REBATE_TYPE,tr.REBATE_BILLING_PERIOD,tr.REBATE_START_DATE, tr.REBATE_END_DATE, tr.TRAN_QTY ,tr.TRAN_AMT ,tr.TRAN_COGS_AMT ,tr.REBATE_PERCENTAGE,tr.REBATE_DOLLAR_AMOUNT,tr.TRAN_AMT  
+--FROM ods."TRANSACTIONS" tr
+--LEFT JOIN ods.CURR_ITEMS_PROD ci ON ci.item_name = tr.SKU  AND ci.fc_id = tr.MAGENTO_LOCATION_ID 
+--WHERE tr.TRAN_SUB_TYPE_ID in (111,16) AND tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date}) 
+--SELECT tt.*,bm.LIST_ITEM_NAME,
+--COALESCE(mt.BILLING_CUSTOMER_ID ,mt.VENDOR_ID) AS cust_vend FROM test tt
+--LEFT JOIN (SELECT DISTINCT BRAND_ID,BRAND_RECORDS_NAME ,BILLING_CUSTOMER_ID ,VENDOR_ID  FROM ods.NS_VENDOR_REBATES ) mt ON mt.BRAND_RECORDS_NAME = tt.BRAND_NAME 
+--LEFT JOIN ods.BILLING_METHOD bm ON bm.LIST_ID =tt.rebate_billing_method
+--WHERE tt.rebate_start_date IS NOT NULL
+--
 
 
 -- rebate only report grouped 
@@ -267,7 +260,7 @@ WHERE tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tr.TRAN_SUB_TY
 AND fc.FC_TYPE !='drinks' AND COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) IS NOT NULL
  
 
-
+--Create Cost Adjustment Rebates
 INSERT INTO ods."TRANSACTIONS" (sku,tran_type ,TRAN_SUB_TYPE_ID ,TRAN_SUB_TYPE,tran_date ,TRAN_COGS_AMT,CREATED_AT,ITEM_ID,TRAN_GL_DATE,LOCATION_ID,REBATE_START_DATE,REBATE_END_DATE,REBATE_PERCENTAGE,REBATE_DOLLAR_AMOUNT,REBATE_BILLING_PERIOD,REBATE_TYPE,REBATE_CALC_TYPE,TRAN_AMT,REBATE_BILLING_METHOD,NS_TRAN_ID)
 SELECT ci.ITEM_name, 300,111,'Vendor Rebates',he.TRANDATE::TIMESTAMP_NTZ ,de.amount, de.DATE_CREATED::TIMESTAMP_NTZ ,de.ITEM_ID , he.TRANDATE,de.LOCATION_ID ,
 COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) AS start_date,
@@ -306,13 +299,6 @@ LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILL
 WHERE de.ACCOUNT_ID  =279 AND COALESCE(vr.percentage,vrin.percentage,br.percentage,brin.percentage)  IS NOT NULL AND he.TRANDATE < sysdate()  AND trn.ns_tran_id IS null
 
 
-
-SELECT * FROM ods.NS_COSTADJ_DETAIL de 
-INNER JOIN ods.NS_COSTADJ_HEADER he ON he.TRANSACTION_ID =de.TRANSACTION_ID 
-
-SELECT * FROM ods.CURR_ITEMS ci WHERE ci.ITEM_ID ='9073'
-
-SELECT * FROM ods."TRANSACTIONS"  WHERE TRAN_SUB_TYPE_ID =111 AND NS_TRAN_ID IS NOT NULL
 
 SELECT 
 SKU,sum(tran_qty) AS quantity , sum(TRAN_COGS_AMT) AS COGS ,sum(PB_COST) AS pb_cogs,START_DATE,END_DATE,PERCENTAGE,DOLLAR_AMOUNT,BILLING_PERIOD,BRAND_SKU,REBATE_CALC_TYPE,sum(REBATE_TOTAL) AS fiforebate,sum(PB_REBATE_TOTAL) AS pb_rebate,BILLING_METHOD
@@ -366,14 +352,7 @@ WHERE tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tr.TRAN_SUB_TY
 AND fc.FC_TYPE !='drinks' AND COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) IS NOT NULL)
 GROUP BY SKU,START_DATE,END_DATE,PERCENTAGE,DOLLAR_AMOUNT,BILLING_PERIOD,BRAND_SKU,REBATE_CALC_TYPE,BILLING_METHOD
 
-
-SELECT * FROM ods.CURR_ITEMS WHERE ITEM_TYPE = 'Other Charge' AND ITEM_ID IN ('149998','150001','149999','150000','150002','167942','171783','46805','31184','23431','7735','31091','31185') AND FC_ID =2
-
-
-
-SELECT * FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID = 111 and tr.sku = '662166666553'
-
-
+--update Rebates for changes
 UPDATE ods.NS_VENDOR_REBATES 
     SET 
     NS_VENDOR_REBATES.BILLING_PERIOD = upd.BILLING_PERIOD, 
@@ -385,14 +364,8 @@ UPDATE ods.NS_VENDOR_REBATES
     NS_VENDOR_REBATES.VENDOR_ID  = upd.VENDOR_ID 
     FROM (SELECT * FROM staging.STG_VENDOR_REBATES) upd
     WHERE NS_VENDOR_REBATES.REBATE_AGREEMENT_ID  = upd.REBATE_AGREEMENT_ID
+   
     
-SELECT * FROM staging.STG_VENDOR_REBATES WHERE BRAND_RECORDS_NAME = 'Applegate'
-
-SELECT * FROM ods.NS_VENDOR_REBATES WHERE BRAND_RECORDS_NAME = 'Mad Hippie'
-
-
-SELECT * FROM ods.TRANSACTIONS_PROD tr WHERE tr.TRAN_GL_DATE BETWEEN $P{start_date} AND $P{end_date} AND tr.TRAN_SUB_TYPE_ID =16 
-
 SELECT BRAND_NAME,max(REBATE_BILLING_METHOD),SKU,DESCRIPTION,MAX(REBATE_TYPE),MAX(REBATE_BILLING_PERIOD),MAX(REBATE_START_DATE),max(REBATE_END_DATE),sum(TRAN_QTY),sum(TRAN_COGS_AMT),max(REBATE_PERCENTAGE),max(REBATE_DOLLAR_AMOUNT),sum(REBATE_TO_BILL),max(LIST_ITEM_NAME),max(CUST_VEND)
 FROM(SELECT reb.BRAND_NAME,reb.REBATE_BILLING_METHOD,reb.SKU,reb.DESCRIPTION,reb.REBATE_TYPE,reb.REBATE_BILLING_PERIOD,reb.REBATE_START_DATE,reb.REBATE_END_DATE,sum(TRAN_QTY) AS TRAN_QTY,sum(reb.TRAN_COGS_AMT) AS TRAN_COGS_AMT,reb.REBATE_PERCENTAGE,reb.REBATE_DOLLAR_AMOUNT,sum(reb.REBATE_TOTAL) AS REBATE_TO_BILL,reb.LIST_ITEM_NAME,reb.CUST_VEND
 from(
@@ -422,10 +395,6 @@ SELECT tr.ORDER_LINE_ID ,count(tr.ORDER_LINE_ID) FROM ods."TRANSACTIONS" tr WHER
 GROUP BY tr.ORDER_LINE_ID HAVING count(tr.ORDER_LINE_ID) >1) tes ON tes.order_line_id = tr.order_line_id
 WHERE tr.TRAN_SUB_TYPE_ID =16 AND tr.TRAN_GL_DATE ='2023-11-16' 
 
-SELECT * FROM ods."TRANSACTIONS" trn WHERE trn.TRAN_GL_DATE ='2023-11-16' AND trn.TRAN_SUB_TYPE_ID =16
-
-SELECT * FROM staging.STAGE_ORDER_FULFILLMENT WHERE MESSAGE_UUID ='b96ac0f2-9567-0a5f-77b9-36a5268876fc'
-
 
 
 select 300 as tran_type, 16, 'Product'  as tran_sub_type, sof.tran_date, 'order' as order_type, sof.order_id, sof.increment_id,
@@ -438,26 +407,8 @@ select 300 as tran_type, 16, 'Product'  as tran_sub_type, sof.tran_date, 'order'
         from staging.stage_order_fulfillment sof
         where sof.units_shipped  > 0 and sof.product_type <> 'bundle'  
 
-SELECT * FROM ods.CURR_ITEMS ci WHERE ci.ITEM_NAME = '853665005091'     
 
-SELECT * FROM STAGING.STAGE_ORDER_FULFILLMENT WHERE INCREMENT_ID  ='130752034'
-
-SELECT tr.SALE_DATE  ,tr.ORDER_LINE_ID ,count(tr.ORDER_LINE_ID) FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID =16
-GROUP BY tr.SALE_DATE  ,tr.ORDER_LINE_ID
-HAVING count(tr.ORDER_LINE_ID) >1
-
-SELECT * FROM ods.NS_VENDOR_REBATES 
-
-SELECT * FROM ods."TRANSACTIONS" tr WHERE tr.ORDER_LINE_ID ='305207396'
-
-SELECT * FROM ods."TRANSACTIONS" WHERE ORDER_LINE_ID ='305237330'
-
-SELECT * FROM STAGING.ODS_MESSAGE_QUEUE_PROCESSED  WHERE ORDER_ID ='44365411'
-
-SELECT * FROM ods.ORDER_DETAIL  WHERE ORDER_ID ='44365411'
-
-SELECT * FROM STAGING.ODS_MESSAGE_QUEUE_PROCESSED  WHERE ORDER_ID ='44365411'
-
+--Netsuite Upload Template
 WITH funding AS (SELECT COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) AS method,
 CASE 
 	WHEN COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) ='AR Invoice' THEN coalesce(vr.BILLING_CUSTOMER_ID ,bm.BILLING_CUSTOMER_ID)
@@ -496,3 +447,59 @@ WHERE tr.tran_sub_type_id IN (111,112) AND tr.tran_gl_date  BETWEEN $P{start_dat
 SELECT tran_sub_type_id,"METHOD",CUST_VEND_ID,INVOICENUMBER,MONTH_END_DATE,MEMO,sum(AMOUNT) ,ITEM,DESCRIPTION,NS_LOCATION,SKU_INFO,sum(DISCOUNT),sum(TRAN_QTY)
 FROM funding fd
 GROUP BY tran_sub_type_id,"METHOD",CUST_VEND_ID,INVOICENUMBER,MONTH_END_DATE,MEMO,ITEM,DESCRIPTION,NS_LOCATION,SKU_INFO
+
+
+--UNFI Report      
+WITH funding AS (SELECT COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) AS method,
+CASE 
+	WHEN COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) ='AR Invoice' THEN coalesce(vr.BILLING_CUSTOMER_ID ,bm.BILLING_CUSTOMER_ID)
+	WHEN COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) ='AP Credit' THEN coalesce(vr.VENDOR_ID  ,bm.BILLING_VENDOR_ID)
+END AS cust_vend_id
+,cl.MONTHNAME ||' '||cl.CALENDARYEAR ||' Brand Funding Participation' AS memo
+,cl.MONTH_END_DATE
+,'TMVF-' || cl.MONTHNAME ||cl.CALENDARYEAR||'-'||ci.brand_id AS invoicenumber
+,CASE 
+	WHEN TR.TRAN_SUB_TYPE_ID =111 THEN COALESCE(TR.REBATE_TOTAL,0) 
+	WHEN TR.TRAN_SUB_TYPE_ID =112 THEN COALESCE(tr.TRAN_AMT,0) 
+END AS amount 
+,
+CASE 
+	WHEN TR.TRAN_SUB_TYPE_ID =111 THEN 'Rebates' 
+	WHEN TR.TRAN_SUB_TYPE_ID =112 THEN 'Ads'
+END AS program 
+,CASE 
+	WHEN TR.TRAN_SUB_TYPE_ID =111 THEN 'Rebates' 
+	WHEN TR.TRAN_SUB_TYPE_ID =112 THEN 'Brand Marketing'
+END AS billing_type 
+,CASE 
+	WHEN TR.TRAN_SUB_TYPE_ID =111  AND COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) ='AR Invoice' THEN '31091' 
+	WHEN TR.TRAN_SUB_TYPE_ID =112 AND COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) ='AR Invoice' THEN '7735'
+	WHEN TR.TRAN_SUB_TYPE_ID =111  AND COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) ='AP Credit' THEN '149998' 
+	WHEN TR.TRAN_SUB_TYPE_ID =112 AND COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) ='AP Credit' THEN '150002'
+END AS item 
+,CASE 
+	WHEN TR.TRAN_SUB_TYPE_ID =111  THEN cl.MONTHNAME ||' '||cl.CALENDARYEAR ||' Rebates'
+	WHEN TR.TRAN_SUB_TYPE_ID =112 THEN cl.MONTHNAME ||' '||cl.CALENDARYEAR ||' Brand Marketing Fees'
+END AS description
+, 1 AS ns_location
+, ci.DESCRIPTION AS sku_info
+,COALESCE(tr.tran_cogs_amt, tr.TRAN_COST_AMT) AS discount 
+,tr.TRAN_QTY 
+,tr.TRAN_SUB_TYPE_ID 
+,ci.VENDOR_NAME ,
+ci.BRAND_NAME ,
+ci.BRAND_ID,tr.SKU 
+,'accountsreceivable@thrivemarket.com' AS contactinfo
+, COALESCE(bm.ASSET_DESCRIPTION,'Vendor Rebates')  AS invoicecategory
+FROM ods."TRANSACTIONS" tr 
+LEFT JOIN ods.NS_FC_XREF ns ON ns.NS_FC_ID = tr.LOCATION_ID 
+LEFT JOIN ods.CURR_ITEMS_PROD ci ON ci.item_name = tr.SKU  AND COALESCE(ci.fc_id,2) = ns.ODS_FC_ID  
+LEFT JOIN (SELECT DISTINCT brand_records_name,billing_customer_id,vendor_id,billing_method_id FROM  ods.NS_VENDOR_REBATES) vr ON vr.BRAND_RECORDS_NAME =ci.BRAND_NAME 
+LEFT JOIN  ods.BRAND_MARKETING   bm ON bm.VENDOR_FUNDING__BRAND_MARKE_ID =tr.BRAND_MARKETING_ID 
+LEFT JOIN ods.BILLING_METHOD bil ON bil.LIST_ID =vr.BILLING_METHOD_ID 
+LEFT JOIN ods.CAL_LU cl ON cl.FULLDATE = tr.TRAN_GL_DATE 
+WHERE tr.tran_sub_type_id IN (111,112) AND tr.tran_gl_date  BETWEEN $P{start_date} AND $P{end_date} AND COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) = 'UNFI Bill' )
+SELECT vendor_name,brand_name,INVOICENUMBER,program, billing_type, MONTH_END_DATE,SKU,invoicecategory,SKU_INFO,sum(TRAN_QTY),sum(DISCOUNT),sum(AMOUNT)/NULLIF(sum(DISCOUNT),0) AS percentage, sum(AMOUNT),contactinfo
+FROM funding fd
+GROUP BY invoicecategory,program, billing_type,vendor_name,brand_name,BRAND_ID,tran_sub_type_id,"METHOD",CUST_VEND_ID,INVOICENUMBER,MONTH_END_DATE,MEMO,SKU,DESCRIPTION,SKU_INFO,contactinfo
+        
