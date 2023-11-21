@@ -28,7 +28,7 @@ spPostBrandMarketing = {
                       BRAND_MARKETING.BILLING_VENDOR_ID  = upd.BILLING_VENDOR_ID 
                       BRAND_MARKETING.BILLING_METHOD  = upd.BILLING_METHOD 
                       FROM (SELECT * FROM staging.STG_BRAND_MARKETING) upd
-                      WHERE BRAND_MARKETING.VENDOR_FUNDING_BRAN_MARKE_ID  = upd.VENDOR_FUNDING_BRAN_MARKE_ID"""
+                      WHERE BRAND_MARKETING.VENDOR_FUNDING_BRAND_MARKE_ID  = upd.VENDOR_FUNDING_BRAND_MARKE_ID"""
                     ,
                     "3 - create Brand Marketing transactions":
                     """
