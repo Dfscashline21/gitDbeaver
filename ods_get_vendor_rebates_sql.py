@@ -43,7 +43,7 @@ spPostRebates = {
                       NS_VENDOR_REBATES.BILLING_METHOD_ID  = upd.BILLING_METHOD_ID  , 
                       NS_VENDOR_REBATES.BILLING_CUSTOMER_ID = upd.BILLING_CUSTOMER_ID, 
                       NS_VENDOR_REBATES.VENDOR_ID  = upd.VENDOR_ID,
-                      NS_VENDOR_REBATES.BRANDEMAIL  = upd.BRAND_EMAIL,
+                      NS_VENDOR_REBATES.BRANDEMAIL  = upd.BRANDEMAIL
                       FROM (SELECT * FROM staging.STG_VENDOR_REBATES) upd
                       WHERE NS_VENDOR_REBATES.REBATE_AGREEMENT_ID  = upd.REBATE_AGREEMENT_ID
                     
