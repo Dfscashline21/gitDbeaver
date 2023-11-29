@@ -408,6 +408,8 @@ select 300 as tran_type, 16, 'Product'  as tran_sub_type, sof.tran_date, 'order'
         where sof.units_shipped  > 0 and sof.product_type <> 'bundle'  
 
 
+SELECT  * FROM ods.BRAND_MARKETING 
+        
 --Netsuite Upload Template
 WITH funding AS (SELECT COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) AS method,
 CASE 
@@ -429,10 +431,13 @@ END AS amount
 END AS item 
 ,CASE 
 	WHEN TR.TRAN_SUB_TYPE_ID =111  THEN cl.MONTHNAME ||' '||cl.CALENDARYEAR ||' Rebates'
-	WHEN TR.TRAN_SUB_TYPE_ID =112 THEN cl.MONTHNAME ||' '||cl.CALENDARYEAR ||' Brand Marketing Fees'
+	WHEN TR.TRAN_SUB_TYPE_ID =112 THEN bm.ASSET_DESCRIPTION  
 END AS description
 , 1 AS ns_location
-, tr.SKU || ' - '|| ci.DESCRIPTION AS sku_info
+, CASE 
+WHEN tr.tran_sub_type_id = 111 THEN  tr.SKU || ' - '|| ci.DESCRIPTION 
+WHEN tr.tran_sub_type_id = 112 THEN bm.asset_description
+END AS sku_info
 ,tr.TRAN_COGS_AMT AS discount 
 ,tr.TRAN_QTY 
 ,tr.TRAN_SUB_TYPE_ID 
@@ -443,8 +448,17 @@ LEFT JOIN (SELECT DISTINCT brand_records_name,billing_customer_id,vendor_id,bill
 LEFT JOIN  ods.BRAND_MARKETING   bm ON bm.VENDOR_FUNDING__BRAND_MARKE_ID =tr.BRAND_MARKETING_ID 
 LEFT JOIN ods.BILLING_METHOD bil ON bil.LIST_ID =vr.BILLING_METHOD_ID 
 LEFT JOIN ods.CAL_LU cl ON cl.FULLDATE = tr.TRAN_GL_DATE 
-WHERE tr.tran_sub_type_id IN (111,112) AND tr.tran_gl_date  BETWEEN $P{start_date} AND $P{end_date} )
-SELECT tran_sub_type_id,"METHOD",CUST_VEND_ID,INVOICENUMBER,MONTH_END_DATE,MEMO,sum(AMOUNT) ,ITEM,DESCRIPTION,NS_LOCATION,SKU_INFO,sum(DISCOUNT),sum(TRAN_QTY)
+WHERE tr.tran_sub_type_id IN (111,112) AND tr.tran_gl_date  BETWEEN $P{start_date} AND $P{end_date} AND bm.BILLING_METHOD !='UNFI Bill')
+SELECT tran_sub_type_id,"METHOD",CUST_VEND_ID,INVOICENUMBER,MONTH_END_DATE,MEMO,sum(AMOUNT) ,ITEM,DESCRIPTION,NS_LOCATION,SKU_INFO,
+CASE 
+	WHEN tran_sub_type_id = 111 THEN sum(DISCOUNT)
+	WHEN tran_sub_type_id = 112 THEN sum(AMOUNT) 
+END AS DISCOUNT,
+CASE 
+	WHEN tran_sub_type_id =111 THEN  sum(AMOUNT) /NULLIF(sum(DISCOUNT),0) 
+	WHEN tran_sub_type_id = 112 THEN 1 
+END AS rate
+, COALESCE(sum(TRAN_QTY),1) AS tran_qty 
 FROM funding fd
 GROUP BY tran_sub_type_id,"METHOD",CUST_VEND_ID,INVOICENUMBER,MONTH_END_DATE,MEMO,ITEM,DESCRIPTION,NS_LOCATION,SKU_INFO
 
@@ -457,7 +471,7 @@ CASE
 END AS cust_vend_id
 ,cl.MONTHNAME ||' '||cl.CALENDARYEAR ||' Brand Funding Participation' AS memo
 ,cl.MONTH_END_DATE
-,'TMVF-' || cl.MONTHNAME ||cl.CALENDARYEAR||'-'||ci.brand_id AS invoicenumber
+,COALESCE('TMVF-' || cl.MONTHNAME ||cl.CALENDARYEAR||'-'||ci.brand_id,'TMVF-' || cl.MONTHNAME ||cl.CALENDARYEAR||'-'||bm.brand_id) AS invoicenumber
 ,CASE 
 	WHEN TR.TRAN_SUB_TYPE_ID =111 THEN COALESCE(TR.REBATE_TOTAL,0) 
 	WHEN TR.TRAN_SUB_TYPE_ID =112 THEN COALESCE(tr.TRAN_AMT,0) 
@@ -487,19 +501,49 @@ END AS description
 ,tr.TRAN_QTY 
 ,tr.TRAN_SUB_TYPE_ID 
 ,ci.VENDOR_NAME ,
+bm.BRAND_RECORDS_NAME,
 ci.BRAND_NAME ,
-ci.BRAND_ID,tr.SKU 
+ci.BRAND_ID,COALESCE(tr.SKU,'00000000000') AS SKU 
 ,'accountsreceivable@thrivemarket.com' AS contactinfo
-, COALESCE(bm.ASSET_DESCRIPTION,'Vendor Rebates')  AS invoicecategory
+,COALESCE(bm.BRANDEMAIL, vr.brandemail) AS brandemail
+, COALESCE(bm.BRAND_RECORDS_NAME || ' - ' ||bm.ASSET_DESCRIPTION,'Vendor Rebates')  AS invoicecategory
+,CASE 
+	WHEN TR.TRAN_SUB_TYPE_ID =112 THEN 'x'
+END AS supress
 FROM ods."TRANSACTIONS" tr 
 LEFT JOIN ods.NS_FC_XREF ns ON ns.NS_FC_ID = tr.LOCATION_ID 
 LEFT JOIN ods.CURR_ITEMS_PROD ci ON ci.item_name = tr.SKU  AND COALESCE(ci.fc_id,2) = ns.ODS_FC_ID  
-LEFT JOIN (SELECT DISTINCT brand_records_name,billing_customer_id,vendor_id,billing_method_id FROM  ods.NS_VENDOR_REBATES) vr ON vr.BRAND_RECORDS_NAME =ci.BRAND_NAME 
+LEFT JOIN (SELECT DISTINCT brand_records_name,billing_customer_id,vendor_id,billing_method_id,brandemail FROM  ods.NS_VENDOR_REBATES) vr ON vr.BRAND_RECORDS_NAME =ci.BRAND_NAME 
 LEFT JOIN  ods.BRAND_MARKETING   bm ON bm.VENDOR_FUNDING__BRAND_MARKE_ID =tr.BRAND_MARKETING_ID 
 LEFT JOIN ods.BILLING_METHOD bil ON bil.LIST_ID =vr.BILLING_METHOD_ID 
 LEFT JOIN ods.CAL_LU cl ON cl.FULLDATE = tr.TRAN_GL_DATE 
 WHERE tr.tran_sub_type_id IN (111,112) AND tr.tran_gl_date  BETWEEN $P{start_date} AND $P{end_date} AND COALESCE(bil.LIST_ITEM_NAME,bm.BILLING_METHOD) = 'UNFI Bill' )
-SELECT vendor_name,brand_name,INVOICENUMBER,program, billing_type, MONTH_END_DATE,SKU,invoicecategory,SKU_INFO,sum(TRAN_QTY),sum(DISCOUNT),sum(AMOUNT)/NULLIF(sum(DISCOUNT),0) AS percentage, sum(AMOUNT),contactinfo
+SELECT COALESCE(brand_name,brand_records_name) AS vendor_name ,COALESCE(brand_name,brand_records_name) AS brand_name,INVOICENUMBER,program, billing_type, MONTH_END_DATE,SKU,invoicecategory,SKU_INFO,sum(COALESCE (TRAN_QTY,1)),sum(COALESCE(DISCOUNT,AMOUNT,AMOUNT)),COALESCE(sum(AMOUNT)/NULLIF(sum(DISCOUNT),0),1) AS percentage, sum(AMOUNT),contactinfo,brandemail,supress
 FROM funding fd
-GROUP BY invoicecategory,program, billing_type,vendor_name,brand_name,BRAND_ID,tran_sub_type_id,"METHOD",CUST_VEND_ID,INVOICENUMBER,MONTH_END_DATE,MEMO,SKU,DESCRIPTION,SKU_INFO,contactinfo
-        
+GROUP BY invoicecategory,program, billing_type,vendor_name,COALESCE(brand_name,brand_records_name),brand_records_name,BRAND_ID,tran_sub_type_id,"METHOD",CUST_VEND_ID,INVOICENUMBER,MONTH_END_DATE,MEMO,SKU,DESCRIPTION,SKU_INFO,contactinfo,brandemail,supress
+      
+SELECT DISTINCT curr.brand_name , curr.vendor_name FROM ods.CURR_ITEMS curr
+
+SELECT * FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID =111 
+
+SELECT * FROM ods.CURR_ITEMS WHERE BRAND_ID =1209
+
+SELECT * FROM ods.TRANSACTIONS tr 
+WHERE tr.TRAN_SUB_TYPE_ID =48
+
+SELECT * FROM ods.V_DISCOUNT_DETAIL 
+
+SELECT DISTINCT tr.RULE_ID , tr.RULE_NAME  FROM ods."TRANSACTIONS" tr 
+
+SELECT* FROM STAGING.STG_VENDOR_REBATES
+
+SELECT * FROM ods.NS_VENDOR_REBATES 
+
+ALTER TABLE STAGING.STG_VENDOR_REBATES
+ADD COLUMN BRANDEMAIL varchar(104)
+
+SELECT * FROM ods.ORDER_DETAIL_DISCOUNTS odd WHERE odd.SPONSORED_BY IS NOT null
+
+SELECT * FROM ods.NS_VENDOR_REBATES 
+
+SELECT DISTINCT TRAN_SUB_TYPE ,TRAN_SUB_TYPE_ID  FROM ods.TRANSACTION_SUB_TYPE  
