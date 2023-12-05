@@ -1,5 +1,17 @@
 
 
+getBrandRecords = """
+                    select br.*,bm.LIST_ITEM_NAME,vm.VENDOR_ID,sysdate(),COALESCE(cnt.EMAIL,cst.EMAIL,vnd.email,csts.email,vndr.email) from Administrator.BRAND_RECORDS br 
+                    left join Administrator.BILLING_METHOD bm on br.BILLING_METHOD_ID = bm.LIST_ID 
+                    left join Administrator.BRAND_RECORDS_BILLING_VENDOR_MAP vm on vm.BRAND_RECORDS_ID = br.BRAND_RECORDS_ID 
+                    left join (select c.brand_records_id as BRAND_RECORDS_ID , Max(c.Contact_id) as CONTACT_ID from Administrator.BRAND_RECORDS_VENDOR_CONTACT_MAP c group by c.BRAND_RECORDS_ID )cm on cm.BRAND_RECORDS_ID  = br.brand_records_id
+                    left join (select CONTACT_ID as CONTACT_ID, EMAIL as EMAIL from Administrator.CONTACTS )cnt on cnt.CONTACT_ID = cm.CONTACT_ID
+                    left join (select cust.CUSTOMER_ID ,cust.EMAIL from Administrator.CUSTOMERS cust)cst on cst.customer_id = br.billing_customer_id
+                    left join (select cust.NAME ,cust.EMAIL from Administrator.CUSTOMERS cust)csts on csts.NAME = br.BRAND_RECORDS_NAME 
+                    left join (select  vendor_id,email from Administrator.VENDORS ) vnd on vnd.VENDOR_ID = vm.VENDOR_ID 
+                    left join (select  NAME,EMAIL from Administrator.VENDORS ) vndr on vndr.NAME = br.BRAND_RECORDS_NAME    
+                                     """
+
 getVendRebates =   """
                     select ra.REBATE_AGREEMENT_ID ,ra.ACTIVE_STATUS_ID ,ac.LIST_ITEM_NAME ,ra.BILLING_PERIOD_ID,bp.LIST_ITEM_NAME ,ra.BRAND_ID,
                     br.BRAND_RECORDS_NAME  ,ra.START_DATE ,ra.END_DATE,ra.DOLLAR_AMOUNT ,ra.PERCENTAGE ,ra.ITEM_ID ,ra.IS_INACTIVE,
@@ -46,6 +58,30 @@ spPostRebates = {
                       NS_VENDOR_REBATES.BRANDEMAIL  = upd.BRANDEMAIL
                       FROM (SELECT * FROM staging.STG_VENDOR_REBATES) upd
                       WHERE NS_VENDOR_REBATES.REBATE_AGREEMENT_ID  = upd.REBATE_AGREEMENT_ID
+                    
+                    """
+}
+
+
+spPostBrands = {
+                    "1 - Insert new rows into ODS.NS_VENDOR_REBATES":
+                    """
+                  INSERT INTO ODS.BRAND_RECORDS
+                SELECT svr.* FROM staging.STG_BRAND_RECORDS svr
+                LEFT OUTER JOIN ods.BRAND_RECORDS nvr ON svr.brand_records_id = nvr.brand_records_id
+                WHERE nvr.brand_records_id IS NULL  
+                        """,
+                    "2 - Update existing records in ODS.BRAND_RECORDS":
+                    """
+                  UPDATE ods.BRAND_RECORDS 
+                      SET
+                      BRAND_RECORDS.BILLING_METHOD_ID  = upd.BILLING_METHOD_ID  , 
+                      BRAND_RECORDS.CATEGORY_MANAGER_ID  = upd.CATEGORY_MANAGER_ID  , 
+                      BRAND_RECORDS.BILLING_CUSTOMER_ID = upd.BILLING_CUSTOMER_ID, 
+                      BRAND_RECORDS.VENDOR_ID  = upd.VENDOR_ID,
+                      BRAND_RECORDS.BRANDEMAIL  = upd.BRANDEMAIL
+                      FROM (SELECT * FROM staging.STG_BRAND_RECORDS) upd
+                      WHERE BRAND_RECORDS.brand_records_id  = upd.brand_records_id
                     
                     """
 }

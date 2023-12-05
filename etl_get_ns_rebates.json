@@ -1,0 +1,54 @@
+{
+  "dag_name": "ods_get_vendor_rebates",
+  "dev_dag_schedule": null,
+  "dag_schedule": "0 9 * * *",
+  "dag_retries": 3,
+  "slack_channel": "erpteam",
+  "dependencies": ["process_brand_records","Post_process_brand_records",
+    "process_vendor_rebates",
+    "Post_process_vendor_rebates"
+  ],
+  "tasks": [
+    {
+      "task_type": "data",
+      "task_name": "process_brand_records",
+      "source_module": "ods_get_vendor_rebates_sql",
+      "source_attribute": "getBrandRecords",
+      "source_sql": "",
+      "variable_module": "",
+      "variable_attribute": "",
+      "variable_connection": "",
+      "target_table": "staging.STG_BRAND_RECORDS",
+      "truncate_table": true,
+      "source_hook": "netsuite",
+      "source_hook_type": "jdbc",
+      "target_hook": "snowflake_ods_staging",
+      "target_hook_type": "snowflake",
+      "post_process_module": "ods_get_vendor_rebates_sql",
+      "post_process_attribute": "spPostBrands",
+      "post_process_sql": {},
+      "active": true
+    }
+    ,
+    {
+      "task_type": "data",
+      "task_name": "process_vendor_rebates",
+      "source_module": "ods_get_vendor_rebates_sql",
+      "source_attribute": "getVendRebates",
+      "source_sql": "",
+      "variable_module": "",
+      "variable_attribute": "",
+      "variable_connection": "",
+      "target_table": "staging.STG_VENDOR_REBATES",
+      "truncate_table": true,
+      "source_hook": "netsuite",
+      "source_hook_type": "jdbc",
+      "target_hook": "snowflake_ods_staging",
+      "target_hook_type": "snowflake",
+      "post_process_module": "ods_get_vendor_rebates_sql",
+      "post_process_attribute": "spPostRebates",
+      "post_process_sql": {},
+      "active": true
+    }
+  ]
+}
