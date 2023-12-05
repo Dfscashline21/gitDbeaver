@@ -79,7 +79,7 @@ spPostBrands = {
                       BRAND_RECORDS.CATEGORY_MANAGER_ID  = upd.CATEGORY_MANAGER_ID  , 
                       BRAND_RECORDS.BILLING_CUSTOMER_ID = upd.BILLING_CUSTOMER_ID, 
                       BRAND_RECORDS.VENDOR_ID  = upd.VENDOR_ID,
-                      BRAND_RECORDS.BRANDEMAIL  = upd.BRANDEMAIL
+                      BRAND_RECORDS.BRAND_EMAIL  = upd.BRAND_EMAIL
                       FROM (SELECT * FROM staging.STG_BRAND_RECORDS) upd
                       WHERE BRAND_RECORDS.brand_records_id  = upd.brand_records_id
                     
