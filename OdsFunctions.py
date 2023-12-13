@@ -1147,9 +1147,9 @@ spOrderFulfillment = {
         left outer join ods.ns_fc_xref nfx on sof.fc = nfx.ns_fc_id
         left outer join ods.curr_items ci on sof.sku = ci.item_name and coalesce(nfx.ods_fc_id,2)  = ci.fc_id
         LEFT JOIN (SELECT DISTINCT * FROM TM_IGLOO_ODS_STG.ods.NS_VENDOR_REBATES WHERE start_date < sysdate() AND end_date> sysdate() AND active_status_id = 1 )vr ON vr.ITEM_ID =ci.ITEM_ID
-        LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILLING_PERIOD,BRAND_ID,BRAND_RECORDS_NAME,START_DATE,END_DATE,DOLLAR_AMOUNT,PERCENTAGE,ITEM_ID,IS_INACTIVE,TYPE_ID,REBATE_TYPE,BILLING_METHOD_ID,BILLING_CUSTOMER_ID,VENDOR_ID,BRAND_SKU,DATE_PROCESSED,REBATE_DATE FROM ods.NS_VENDOR_REBATES WHERE start_date < sysdate() AND end_date> sysdate() AND active_status_id = 2 )vrin ON vrin.ITEM_ID =ci.ITEM_ID
+        LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILLING_PERIOD,BRAND_ID,BRAND_RECORDS_NAME,START_DATE,END_DATE,DOLLAR_AMOUNT,PERCENTAGE,ITEM_ID,IS_INACTIVE,TYPE_ID,REBATE_TYPE,BILLING_METHOD_ID,BILLING_CUSTOMER_ID,VENDOR_ID,BRAND_SKU,DATE_PROCESSED FROM ods.NS_VENDOR_REBATES WHERE start_date < sysdate() AND end_date> sysdate() AND active_status_id = 2 )vrin ON vrin.ITEM_ID =ci.ITEM_ID
         LEFT JOIN (SELECT DISTINCT * FROM ods.ns_vendor_rebates vr WHERE vr.ITEM_ID IS NULL AND active_status_id =1 AND start_date < sysdate() AND end_date> sysdate()) br ON  br.brand_id=ci.brand_id
-        LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILLING_PERIOD,BRAND_ID,BRAND_RECORDS_NAME,START_DATE,END_DATE,DOLLAR_AMOUNT,PERCENTAGE,ITEM_ID,IS_INACTIVE,TYPE_ID,REBATE_TYPE,BILLING_METHOD_ID,BILLING_CUSTOMER_ID,VENDOR_ID,BRAND_SKU,DATE_PROCESSED,REBATE_DATE FROM ods.NS_VENDOR_REBATES  WHERE ITEM_ID IS NULL AND active_status_id =2 AND start_date <sysdate() AND end_date> sysdate()) brin ON  brin.brand_id=ci.brand_id
+        LEFT JOIN (SELECT DISTINCT ACTIVE_STATUS_ID,ACTIVE_STATUS,BILLING_PERIOD_ID,BILLING_PERIOD,BRAND_ID,BRAND_RECORDS_NAME,START_DATE,END_DATE,DOLLAR_AMOUNT,PERCENTAGE,ITEM_ID,IS_INACTIVE,TYPE_ID,REBATE_TYPE,BILLING_METHOD_ID,BILLING_CUSTOMER_ID,VENDOR_ID,BRAND_SKU,DATE_PROCESSED FROM ods.NS_VENDOR_REBATES  WHERE ITEM_ID IS NULL AND active_status_id =2 AND start_date <sysdate() AND end_date> sysdate()) brin ON  brin.brand_id=ci.brand_id
         where sof.units_shipped  > 0 and sof.product_type <> 'bundle' AND COALESCE(vr.START_DATE,vrin.start_date,br.start_date,brin.start_date) IS NOT null
         """
         ,
@@ -1166,6 +1166,37 @@ spOrderFulfillment = {
             WHERE TRANSACTIONS.ORDER_LINE_ID = upd.ORDER_LINE_ID AND TRANSACTIONS.TRAN_SUB_TYPE_ID =111 AND TRANSACTIONS.fulfillment_tran_id IS NULL 
         """
         ,
+        "34 - Create TPR Vendor Funding":
+        """
+        insert into ods.transactions (TRAN_TYPE,TRAN_SUB_TYPE,TRAN_DATE,ORDER_TYPE,ORDER_ID,ORDER_LINE_ID,COMPANY_ID,LOCATION_ID,CUSTOMER_ID,SKU,GROUP_ID,GROUP_NAME,CATEGORY_ID,CATEGORY_NAME,SUB_CATEGORY_ID,SUB_CATEGORY_NAME,CLASS_ID,CLASS_NAME,TRAN_QTY,TRAN_DISCOUNT_AMT,CREATED_AT,INCREMENT_ID,MAGENTO_LOCATION_ID,RULE_ID,RULE_NAME,SALE_DATE,ITEM_ID,TRAN_SUB_TYPE_ID,TRAN_GL_DATE,SHIP_DATE,FULFILLMENT_TRAN_ID,REBATE_PERCENTAGE,REBATE_BILLING_METHOD,REBATE_TOTAL,TRAN_AMT)
+        SELECT tr.TRAN_TYPE,'TPR Vendor Funding',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.TRAN_QTY,tr.TRAN_AMT,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.RULE_ID,tr.RULE_NAME,tr.SALE_DATE,tr.ITEM_ID,'113',tr.TRAN_GL_DATE,tr.SHIP_DATE,tr.TRAN_ID,odd.SPONSORED_PERCENTAGE,br.billing_method_id
+        , tr.tran_amt*(odd.SPONSORED_PERCENTAGE/100) as vfiamount,
+        tr.tran_amt*(odd.SPONSORED_PERCENTAGE/100)  AS vfiamount2 FROM ods."TRANSACTIONS" tr 
+        INNER JOIN ods.ORDER_DETAIL_DISCOUNTS odd ON odd.item_id = tr.ORDER_LINE_ID  AND odd.RULE_ID =tr.rule_id
+        left join ods.NS_FC_XREF ns ON ns.FC_ID =tr.MAGENTO_LOCATION_ID  
+        left join ods.curr_items ci on tr.sku = ci.item_name and coalesce(ns.ods_fc_id,2)  = ci.fc_id
+        LEFT JOIN ods.BRAND_RECORDS br ON br.BRAND_RECORDS_ID = ci.BRAND_ID 
+        FULL OUTER JOIN (
+        SELECT DISTINCT tr.ORDER_ID ,tr.ORDER_LINE_ID  FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID =113) dup ON dup.order_id = tr.order_id AND dup.order_line_id = tr.ORDER_line_id
+        WHERE tr.TRAN_SUB_TYPE_ID =48 AND odd.SPONSORED_BY IN ('Brand','Both') AND odd.DISCOUNT_TYPE ='tpa' AND odd.rule_name NOT LIKE 'A&S%'  AND br.billing_method_id in(1,2,3) AND ci.GROUP_ID  NOT IN ('189','188','185','184','182','180','181') AND ci.vendor_type != 'Private Label'
+         AND dup.order_line_id IS  NULL 
+        """,
+        "35 - Create A&S TPR Funding":
+        """
+        insert into ods.transactions (TRAN_TYPE,TRAN_SUB_TYPE,TRAN_DATE,ORDER_TYPE,ORDER_ID,ORDER_LINE_ID,COMPANY_ID,LOCATION_ID,CUSTOMER_ID,SKU,GROUP_ID,GROUP_NAME,CATEGORY_ID,CATEGORY_NAME,SUB_CATEGORY_ID,SUB_CATEGORY_NAME,CLASS_ID,CLASS_NAME,TRAN_QTY,TRAN_DISCOUNT_AMT,CREATED_AT,INCREMENT_ID,MAGENTO_LOCATION_ID,RULE_ID,RULE_NAME,SALE_DATE,ITEM_ID,TRAN_SUB_TYPE_ID,TRAN_GL_DATE,SHIP_DATE,FULFILLMENT_TRAN_ID,REBATE_PERCENTAGE,REBATE_BILLING_METHOD,REBATE_TOTAL,TRAN_AMT)
+        SELECT tr.TRAN_TYPE,'A&S Vendor Funding',tr.TRAN_DATE,tr.ORDER_TYPE,tr.ORDER_ID,tr.ORDER_LINE_ID,tr.COMPANY_ID,tr.LOCATION_ID,tr.CUSTOMER_ID,tr.SKU,tr.GROUP_ID,tr.GROUP_NAME,tr.CATEGORY_ID,tr.CATEGORY_NAME,tr.SUB_CATEGORY_ID,tr.SUB_CATEGORY_NAME,tr.CLASS_ID,tr.CLASS_NAME,tr.TRAN_QTY,tr.TRAN_AMT,tr.CREATED_AT,tr.INCREMENT_ID,tr.MAGENTO_LOCATION_ID,tr.RULE_ID,tr.RULE_NAME,tr.SALE_DATE,tr.ITEM_ID,'114',tr.TRAN_GL_DATE,tr.SHIP_DATE,tr.TRAN_ID,odd.SPONSORED_PERCENTAGE,br.billing_method_id
+        , tr.tran_amt*(odd.SPONSORED_PERCENTAGE/100) as vfiamount,
+        tr.tran_amt*(odd.SPONSORED_PERCENTAGE/100)  AS vfiamount2 FROM ods."TRANSACTIONS" tr 
+        INNER JOIN ods.ORDER_DETAIL_DISCOUNTS odd ON odd.item_id = tr.ORDER_LINE_ID  AND odd.RULE_ID =tr.rule_id
+        left join ods.NS_FC_XREF ns ON ns.FC_ID =tr.MAGENTO_LOCATION_ID  
+        left join ods.curr_items ci on tr.sku = ci.item_name and coalesce(ns.ods_fc_id,2)  = ci.fc_id
+        LEFT JOIN ods.BRAND_RECORDS br ON br.BRAND_RECORDS_ID = ci.BRAND_ID 
+        FULL OUTER JOIN (
+        SELECT DISTINCT tr.ORDER_ID ,tr.ORDER_LINE_ID  FROM ods."TRANSACTIONS" tr WHERE tr.TRAN_SUB_TYPE_ID =114) dup ON dup.order_id = tr.order_id AND dup.order_line_id = tr.ORDER_line_id
+        WHERE tr.TRAN_SUB_TYPE_ID =48 AND odd.SPONSORED_BY IN ('Brand','Both') AND odd.DISCOUNT_TYPE ='tpa' AND odd.rule_name  LIKE 'A&S%'   AND br.billing_method_id in(1,2,3) AND ci.GROUP_ID  NOT IN ('189','188','185','184','182','180','181') AND ci.vendor_type != 'Private Label'
+        AND dup.order_line_id IS  NULL 
+
+        """,
     "36 - Create Thrive Cash Discount for fulfilled orders":
         """
         insert into ods.transactions (tran_type, tran_sub_type_id, tran_sub_type, tran_date, order_type, order_id, increment_id, customer_id, 
