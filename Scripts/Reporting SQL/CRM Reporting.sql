@@ -1,0 +1,33 @@
+--CRM reporting 
+
+WITH crm AS(SELECT order_id,increment_id,sale_date,tran_gl_date, COUPON_RULE_NAME ,rule_id,COUPON_GROUP_CODE, -sum(tr.tran_amt) AS crmdiscount FROM ods."TRANSACTIONS" tr
+INNER JOIN(
+SELECT DISTINCT dje.tran_id FROM ods.DETAIL_JOURNAL_ENTRIES dje WHERE dje.ACCT_NUMBER ='41107') crm ON crm.tran_id = tr.tran_id
+WHERE tr.tran_gl_date  BETWEEN $P{start_date} AND $P{end_date}
+GROUP BY  order_id,increment_id,sale_date,tran_gl_date, COUPON_RULE_NAME ,rule_id,COUPON_GROUP_CODE)
+SELECT * FROM crm cm
+LEFT JOIN (SELECT orderid , sum(pdgpr) AS pdgpr, sum(tpr) AS tpr ,sum(astpr) AS astpr FROM (SELECT order_id as orderid,sum(COALESCE(CASE 
+	WHEN md.DEBIT_ACCOUNT_NUMBER ='40100' THEN -COALESCE(tr.TRAN_AMT,0)
+	WHEN md.CREDIT_ACCOUNT_NUMBER  ='40100' THEN COALESCE(tr.TRAN_AMT,0)
+END,0)) AS pdgpr
+,sum(COALESCE(CASE 
+	WHEN md.DEBIT_ACCOUNT_NUMBER ='41113' THEN -COALESCE(tr.TRAN_AMT,0)  
+	WHEN md.CREDIT_ACCOUNT_NUMBER  ='41113' THEN COALESCE(tr.TRAN_AMT,0)
+END,0)) AS tpr  
+,sum(COALESCE(CASE 
+	WHEN md.DEBIT_ACCOUNT_NUMBER ='41104' THEN -COALESCE(tr.TRAN_AMT,0)  
+	WHEN md.CREDIT_ACCOUNT_NUMBER  ='41104' THEN COALESCE(tr.TRAN_AMT,0)
+END,0)) AS astpr
+FROM ods."TRANSACTIONS" tr 
+INNER JOIN ods.V_GL_MAP_DETAIL md ON md.MAP_ID = tr.JE_MAP_ID 
+GROUP BY orderid,md.DEBIT_ACCOUNT_NUMBER,md.CREDIT_ACCOUNT_NUMBER ) 
+GROUP BY orderid ) pnl ON pnl.orderid = cm.order_id
+UNION all
+SELECT 00000000 AS order_id,
+Null as INCREMENT_ID,Null as SALE_DATE,Null as TRAN_GL_DATE,'Account Activity' as COUPON_RULE_NAME,Null as RULE_ID,Null as COUPON_GROUP_CODE,-sum(COALESCE(jed.debit_amount,0) - COALESCE(jed.credit_amount,0)) as CRMDISCOUNT,Null as ORDERID,Null as PDGPR,Null as TPR,Null as ASTPR
+FROM ods.NS_JE_HEADER jeh
+INNER JOIN ods.NS_JE_DETAIL jed ON jed.TRANSACTION_ID = jeh.TRANSACTION_ID 
+INNER JOIN ods.NETSUITE_ACCOUNTS ns ON ns.ACCOUNT_ID = jed.ACCOUNT_ID 
+WHERE ns.ACCOUNTNUMBER ='41107' AND jeh.TRANDATE BETWEEN $P{start_date} AND $P{end_date} AND jeh.IS_FROM_ODS = FALSE 
+GROUP BY orderid, INCREMENT_ID,SALE_DATE,TRAN_GL_DATE,COUPON_RULE_NAME,RULE_ID,COUPON_GROUP_CODE,ORDERID,PDGPR,TPR,ASTPR
+

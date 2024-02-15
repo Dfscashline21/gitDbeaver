@@ -1,0 +1,27 @@
+--Revenue by State
+
+SELECT ORDER_MONTH,STATE, sum("Product Revenue") AS prodrev, sum("Membership Revenue") AS memrev
+FROM( SELECT CONCAT(MONTHNAME(tr.TRAN_GL_DATE), '-', YEAR(tr.TRAN_GL_DATE)) AS ORDER_MONTH ,
+CASE 
+	WHEN ord.BILLING_STATE IS NULL THEN mem.BILLING_STATE ELSE ord.BILLING_STATE
+END AS STATE ,
+COALESCE (CASE 
+	WHEN tr.je_map_id IN (80,85,90,100,37,36) THEN sum(tr.TRAN_AMT) 
+	WHEN tr.je_map_id IN (35) THEN -sum(tr.TRAN_AMT) 
+END,0) AS "Product Revenue",
+COALESCE(CASE 
+	WHEN tr.je_map_id IN (63,145,124,10,8)  THEN sum(tr.TRAN_AMT) 
+	WHEN tr.je_map_id IN (64,62,79,123)  THEN -sum(tr.TRAN_AMT) 
+END,0) AS "Membership Revenue" FROM ods."TRANSACTIONS" tr 
+INNER JOIN(
+SELECT DISTINCT TRAN_ID  FROM ods.DETAIL_JOURNAL_ENTRIES dje WHERE dje.TRAN_DATE BETWEEN $P{start_date} AND $P{end_date} AND dje.ACCT_NUMBER IN ('40100','40105')) rev ON rev.tran_id = tr.tran_id
+LEFT join(SELECT DISTINCT mh.INCREMENT_ID ,mh.BILLING_STATE
+FROM ods.MEMBERSHIP_HEADER mh) mem ON tr.INCREMENT_ID = mem.increment_id
+LEFT JOIN ( SELECT DISTINCT oh.INCREMENT_ID ,oh.BILLING_STATE
+FROM ods.ORDER_HEADER  oh) ord ON tr.INCREMENT_ID = ord.INCREMENT_ID
+WHERE tr.TRAN_GL_DATE  BETWEEN $P{start_date} AND $P{end_date} 
+GROUP BY CONCAT(MONTHNAME(tr.TRAN_GL_DATE), '-', YEAR(tr.TRAN_GL_DATE)),  STATE , tr.TRAN_SUB_TYPE  ,tr.je_map_id
+HAVING "Product Revenue" <>0 OR "Membership Revenue" <>0
+ORDER BY ORDER_MONTH desc ,  STATE)
+GROUP BY ORDER_MONTH,STATE
+ORDER BY ORDER_MONTH desc , STATE
