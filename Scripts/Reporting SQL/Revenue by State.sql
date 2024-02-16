@@ -25,3 +25,4 @@ HAVING "Product Revenue" <>0 OR "Membership Revenue" <>0
 ORDER BY ORDER_MONTH desc ,  STATE)
 GROUP BY ORDER_MONTH,STATE
 ORDER BY ORDER_MONTH desc , STATE
+
